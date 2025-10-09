@@ -1,0 +1,238 @@
+﻿namespace OwnORMForm.Forms
+{
+    partial class ViewStudentForm
+    {
+        private System.ComponentModel.IContainer components = null;
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        private void InitializeComponent()
+        {
+            Title = new Label();
+            StudentDetailsGroupBox = new GroupBox();
+            StudentTypeValue = new Label();
+            StudentTypeLabel = new Label();
+            ClassValue = new Label();
+            ClassLabel = new Label();
+            AddressValue = new Label();
+            AddressLabel = new Label();
+            NameValue = new Label();
+            NameLabel = new Label();
+            CoursesAndGradesGroupBox = new GroupBox();
+            StudentGridView = new DataGridView();
+            AddCourseBtn = new Button();
+            AddGradeBtn = new Button();
+            StudentDetailsGroupBox.SuspendLayout();
+            CoursesAndGradesGroupBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)StudentGridView).BeginInit();
+            SuspendLayout();
+            Title.Font = new Font("Verdana", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            Title.Location = new Point(5, 5);
+            Title.Margin = new Padding(0, 0, 0, 10);
+            Title.Name = "Title";
+            Title.Size = new Size(1095, 36);
+            Title.TabIndex = 0;
+            Title.Text = "Vis Elev";
+            Title.TextAlign = ContentAlignment.MiddleLeft;
+            StudentDetailsGroupBox.Controls.Add(StudentTypeValue);
+            StudentDetailsGroupBox.Controls.Add(StudentTypeLabel);
+            StudentDetailsGroupBox.Controls.Add(ClassValue);
+            StudentDetailsGroupBox.Controls.Add(ClassLabel);
+            StudentDetailsGroupBox.Controls.Add(AddressValue);
+            StudentDetailsGroupBox.Controls.Add(AddressLabel);
+            StudentDetailsGroupBox.Controls.Add(NameValue);
+            StudentDetailsGroupBox.Controls.Add(NameLabel);
+            StudentDetailsGroupBox.FlatStyle = FlatStyle.Flat;
+            StudentDetailsGroupBox.Font = new Font("Verdana", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            StudentDetailsGroupBox.ForeColor = Color.WhiteSmoke;
+            StudentDetailsGroupBox.Location = new Point(5, 51);
+            StudentDetailsGroupBox.Margin = new Padding(0, 0, 10, 0);
+            StudentDetailsGroupBox.Name = "StudentDetailsGroupBox";
+            StudentDetailsGroupBox.Padding = new Padding(5);
+            StudentDetailsGroupBox.Size = new Size(371, 320);
+            StudentDetailsGroupBox.TabIndex = 1;
+            StudentDetailsGroupBox.TabStop = false;
+            StudentDetailsGroupBox.Text = "Detaljer";
+            StudentTypeValue.BackColor = Color.FromArgb(64, 64, 64);
+            StudentTypeValue.BorderStyle = BorderStyle.FixedSingle;
+            StudentTypeValue.FlatStyle = FlatStyle.Flat;
+            StudentTypeValue.Font = new Font("Verdana", 9.75F);
+            StudentTypeValue.ForeColor = Color.WhiteSmoke;
+            StudentTypeValue.Location = new Point(5, 278);
+            StudentTypeValue.Margin = new Padding(0, 0, 0, 10);
+            StudentTypeValue.Name = "StudentTypeValue";
+            StudentTypeValue.Padding = new Padding(3);
+            StudentTypeValue.Size = new Size(361, 29);
+            StudentTypeValue.TabIndex = 7;
+            StudentTypeValue.Text = "Elev Type";
+            StudentTypeValue.TextAlign = ContentAlignment.MiddleLeft;
+            StudentTypeLabel.Font = new Font("Verdana", 9.75F);
+            StudentTypeLabel.ForeColor = Color.Orange;
+            StudentTypeLabel.Location = new Point(5, 244);
+            StudentTypeLabel.Margin = new Padding(0, 0, 0, 5);
+            StudentTypeLabel.Name = "StudentTypeLabel";
+            StudentTypeLabel.Padding = new Padding(3);
+            StudentTypeLabel.Size = new Size(361, 29);
+            StudentTypeLabel.TabIndex = 6;
+            StudentTypeLabel.Text = "Elev Type";
+            StudentTypeLabel.TextAlign = ContentAlignment.MiddleLeft;
+            ClassValue.BackColor = Color.FromArgb(64, 64, 64);
+            ClassValue.BorderStyle = BorderStyle.FixedSingle;
+            ClassValue.FlatStyle = FlatStyle.Flat;
+            ClassValue.Font = new Font("Verdana", 9.75F);
+            ClassValue.ForeColor = Color.WhiteSmoke;
+            ClassValue.Location = new Point(5, 205);
+            ClassValue.Margin = new Padding(0, 0, 0, 10);
+            ClassValue.Name = "ClassValue";
+            ClassValue.Padding = new Padding(3);
+            ClassValue.Size = new Size(361, 29);
+            ClassValue.TabIndex = 5;
+            ClassValue.Text = "Klasse";
+            ClassValue.TextAlign = ContentAlignment.MiddleLeft;
+            ClassLabel.Font = new Font("Verdana", 9.75F);
+            ClassLabel.ForeColor = Color.Orange;
+            ClassLabel.Location = new Point(5, 171);
+            ClassLabel.Margin = new Padding(0, 0, 0, 5);
+            ClassLabel.Name = "ClassLabel";
+            ClassLabel.Padding = new Padding(3);
+            ClassLabel.Size = new Size(361, 29);
+            ClassLabel.TabIndex = 4;
+            ClassLabel.Text = "Klasse";
+            ClassLabel.TextAlign = ContentAlignment.MiddleLeft;
+            AddressValue.BackColor = Color.FromArgb(64, 64, 64);
+            AddressValue.BorderStyle = BorderStyle.FixedSingle;
+            AddressValue.FlatStyle = FlatStyle.Flat;
+            AddressValue.Font = new Font("Verdana", 9.75F);
+            AddressValue.ForeColor = Color.WhiteSmoke;
+            AddressValue.Location = new Point(5, 132);
+            AddressValue.Margin = new Padding(0, 0, 0, 10);
+            AddressValue.Name = "AddressValue";
+            AddressValue.Padding = new Padding(3);
+            AddressValue.Size = new Size(361, 29);
+            AddressValue.TabIndex = 3;
+            AddressValue.Text = "Adresse";
+            AddressValue.TextAlign = ContentAlignment.MiddleLeft;
+            AddressLabel.Font = new Font("Verdana", 9.75F);
+            AddressLabel.ForeColor = Color.Orange;
+            AddressLabel.Location = new Point(5, 98);
+            AddressLabel.Margin = new Padding(0, 0, 0, 5);
+            AddressLabel.Name = "AddressLabel";
+            AddressLabel.Padding = new Padding(3);
+            AddressLabel.Size = new Size(361, 29);
+            AddressLabel.TabIndex = 2;
+            AddressLabel.Text = "Adresse";
+            AddressLabel.TextAlign = ContentAlignment.MiddleLeft;
+            NameValue.BackColor = Color.FromArgb(64, 64, 64);
+            NameValue.BorderStyle = BorderStyle.FixedSingle;
+            NameValue.FlatStyle = FlatStyle.Flat;
+            NameValue.Font = new Font("Verdana", 9.75F);
+            NameValue.ForeColor = Color.WhiteSmoke;
+            NameValue.Location = new Point(5, 59);
+            NameValue.Margin = new Padding(0, 0, 0, 10);
+            NameValue.Name = "NameValue";
+            NameValue.Padding = new Padding(3);
+            NameValue.Size = new Size(361, 29);
+            NameValue.TabIndex = 1;
+            NameValue.Text = "Navn";
+            NameValue.TextAlign = ContentAlignment.MiddleLeft;
+            NameLabel.Font = new Font("Verdana", 9.75F);
+            NameLabel.ForeColor = Color.Orange;
+            NameLabel.Location = new Point(5, 25);
+            NameLabel.Margin = new Padding(0, 0, 0, 5);
+            NameLabel.Name = "NameLabel";
+            NameLabel.Padding = new Padding(3);
+            NameLabel.Size = new Size(361, 29);
+            NameLabel.TabIndex = 0;
+            NameLabel.Text = "Navn";
+            NameLabel.TextAlign = ContentAlignment.MiddleLeft;
+            CoursesAndGradesGroupBox.Controls.Add(AddGradeBtn);
+            CoursesAndGradesGroupBox.Controls.Add(AddCourseBtn);
+            CoursesAndGradesGroupBox.Controls.Add(StudentGridView);
+            CoursesAndGradesGroupBox.FlatStyle = FlatStyle.Flat;
+            CoursesAndGradesGroupBox.Font = new Font("Verdana", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            CoursesAndGradesGroupBox.ForeColor = Color.WhiteSmoke;
+            CoursesAndGradesGroupBox.Location = new Point(386, 51);
+            CoursesAndGradesGroupBox.Margin = new Padding(0);
+            CoursesAndGradesGroupBox.Name = "CoursesAndGradesGroupBox";
+            CoursesAndGradesGroupBox.Padding = new Padding(5);
+            CoursesAndGradesGroupBox.Size = new Size(714, 320);
+            CoursesAndGradesGroupBox.TabIndex = 2;
+            CoursesAndGradesGroupBox.TabStop = false;
+            CoursesAndGradesGroupBox.Text = "Fag && Karaktere";
+            StudentGridView.AllowUserToAddRows = false;
+            StudentGridView.AllowUserToDeleteRows = false;
+            StudentGridView.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            StudentGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            StudentGridView.Location = new Point(5, 54);
+            StudentGridView.Margin = new Padding(0);
+            StudentGridView.Name = "StudentGridView";
+            StudentGridView.ReadOnly = true;
+            StudentGridView.Size = new Size(704, 261);
+            StudentGridView.TabIndex = 0;
+            AddCourseBtn.BackColor = Color.Green;
+            AddCourseBtn.FlatStyle = FlatStyle.Flat;
+            AddCourseBtn.Location = new Point(5, 21);
+            AddCourseBtn.Margin = new Padding(0, 0, 5, 5);
+            AddCourseBtn.Name = "AddCourseBtn";
+            AddCourseBtn.Size = new Size(125, 28);
+            AddCourseBtn.TabIndex = 1;
+            AddCourseBtn.Text = "Tilføj Fag";
+            AddCourseBtn.UseVisualStyleBackColor = false;
+            AddGradeBtn.BackColor = Color.MediumBlue;
+            AddGradeBtn.FlatStyle = FlatStyle.Flat;
+            AddGradeBtn.Location = new Point(135, 21);
+            AddGradeBtn.Margin = new Padding(0, 0, 5, 5);
+            AddGradeBtn.Name = "AddGradeBtn";
+            AddGradeBtn.Size = new Size(125, 28);
+            AddGradeBtn.TabIndex = 2;
+            AddGradeBtn.Text = "Tilføj Karakter";
+            AddGradeBtn.UseVisualStyleBackColor = false;
+            AutoScaleDimensions = new SizeF(8F, 16F);
+            AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.FromArgb(33, 33, 33);
+            ClientSize = new Size(1105, 378);
+            Controls.Add(CoursesAndGradesGroupBox);
+            Controls.Add(StudentDetailsGroupBox);
+            Controls.Add(Title);
+            Font = new Font("Verdana", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            ForeColor = Color.Gainsboro;
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
+            MinimizeBox = false;
+            Name = "ViewStudentForm";
+            Padding = new Padding(5);
+            StartPosition = FormStartPosition.CenterParent;
+            Text = "Vis Elev";
+            StudentDetailsGroupBox.ResumeLayout(false);
+            CoursesAndGradesGroupBox.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)StudentGridView).EndInit();
+            ResumeLayout(false);
+        }
+
+        #endregion
+
+        private Label Title;
+        private GroupBox StudentDetailsGroupBox;
+        private Label AddressValue;
+        private Label AddressLabel;
+        private Label NameValue;
+        private Label NameLabel;
+        private Label StudentTypeValue;
+        private Label StudentTypeLabel;
+        private Label ClassValue;
+        private Label ClassLabel;
+        private GroupBox CoursesAndGradesGroupBox;
+        private DataGridView StudentGridView;
+        private Button AddGradeBtn;
+        private Button AddCourseBtn;
+    }
+}
