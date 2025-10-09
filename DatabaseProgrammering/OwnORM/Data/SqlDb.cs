@@ -118,14 +118,14 @@ namespace OwnORM.Data
             }
         }
 
-        public async Task<T> ExecuteScalarAsync<T>(string sql, IDictionary<string, object> parameters, CancellationToken cancellationToken) 
+        public async Task<T> ExecuteScalarAsync<T>(string sql, IDictionary<string, object> parameters, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(sql))
                 throw new ArgumentException("SQL must not be empty.", nameof(sql));
 
             await EnsureOpenAsync(cancellationToken).ConfigureAwait(false);
 
-            using(SqlCommand cmd = CreateCommand(_connection, sql, CommandType.Text, parameters)) 
+            using (SqlCommand cmd = CreateCommand(_connection, sql, CommandType.Text, parameters))
             {
                 object result = await cmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
                 if (result == null || result is DBNull)
@@ -134,16 +134,16 @@ namespace OwnORM.Data
             }
         }
 
-        public async Task<int> ExecuteBatchInTransactionAsync(IEnumerable<(string sql, IDictionary<string, object> Parameters)> statements, CancellationToken cancellationToken) 
+        public async Task<int> ExecuteBatchInTransactionAsync(IEnumerable<(string sql, IDictionary<string, object> Parameters)> statements, CancellationToken cancellationToken)
         {
             await EnsureOpenAsync(cancellationToken).ConfigureAwait(false);
 
             using SqlTransaction tx = _connection.BeginTransaction();
             int total = 0;
 
-            try 
+            try
             {
-                foreach(var (Sql, Parameters) in statements) 
+                foreach (var (Sql, Parameters) in statements)
                 {
                     if (string.IsNullOrWhiteSpace(Sql))
                         continue;
@@ -155,17 +155,40 @@ namespace OwnORM.Data
                 tx.Commit();
                 return total;
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
-                try 
+                try
                 {
                     tx.Rollback();
                 }
-                catch 
+                catch
                 {
                     // Ignore rollback errors
                 }
                 throw new Exception("Error executing batch in transaction.", ex);
+            }
+        }
+
+        public async Task<IReadOnlyList<T>> QueryWithFactoryAsync<T>(string sql, IDictionary<string, object> parameters, Func<IDataRecord, T> factory, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(sql))
+                throw new ArgumentException("SQL must not be empty.", nameof(sql));
+
+            if (factory == null)
+                throw new ArgumentException("Factory must not be null.", nameof(factory));
+
+            await EnsureOpenAsync(cancellationToken).ConfigureAwait(false);
+
+            using (SqlCommand cmd = CreateCommand(_connection, sql, CommandType.Text, parameters))
+            using (SqlDataReader reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
+            {
+                List<T> list = new List<T>();
+                while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    T item = factory(reader);
+                    list.Add(item);
+                }
+                return list;
             }
         }
 
