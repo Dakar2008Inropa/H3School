@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Globalization;
 
 namespace OwnORM.Data
 {
@@ -28,11 +29,12 @@ namespace OwnORM.Data
                 await _connection.OpenAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        private static SqlCommand CreateCommand(SqlConnection connection, string sqlOrProcName, CommandType commandType, IDictionary<string, object> parameters)
+        private static SqlCommand CreateCommand(SqlConnection connection, string sqlOrProcName, CommandType commandType, IDictionary<string, object> parameters, SqlTransaction tx = null)
         {
             SqlCommand command = connection.CreateCommand();
             command.CommandText = sqlOrProcName;
             command.CommandType = commandType;
+            command.Transaction = tx;
 
             if (parameters != null)
             {
@@ -113,6 +115,57 @@ namespace OwnORM.Data
                 }
 
                 return list;
+            }
+        }
+
+        public async Task<T> ExecuteScalarAsync<T>(string sql, IDictionary<string, object> parameters, CancellationToken cancellationToken) 
+        {
+            if (string.IsNullOrWhiteSpace(sql))
+                throw new ArgumentException("SQL must not be empty.", nameof(sql));
+
+            await EnsureOpenAsync(cancellationToken).ConfigureAwait(false);
+
+            using(SqlCommand cmd = CreateCommand(_connection, sql, CommandType.Text, parameters)) 
+            {
+                object result = await cmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+                if (result == null || result is DBNull)
+                    return default;
+                return (T)Convert.ChangeType(result, typeof(T), CultureInfo.InvariantCulture);
+            }
+        }
+
+        public async Task<int> ExecuteBatchInTransactionAsync(IEnumerable<(string sql, IDictionary<string, object> Parameters)> statements, CancellationToken cancellationToken) 
+        {
+            await EnsureOpenAsync(cancellationToken).ConfigureAwait(false);
+
+            using SqlTransaction tx = _connection.BeginTransaction();
+            int total = 0;
+
+            try 
+            {
+                foreach(var (Sql, Parameters) in statements) 
+                {
+                    if (string.IsNullOrWhiteSpace(Sql))
+                        continue;
+
+                    using SqlCommand cmd = CreateCommand(_connection, Sql, CommandType.Text, Parameters, tx);
+                    int affected = await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                    total += affected;
+                }
+                tx.Commit();
+                return total;
+            }
+            catch(Exception ex) 
+            {
+                try 
+                {
+                    tx.Rollback();
+                }
+                catch 
+                {
+                    // Ignore rollback errors
+                }
+                throw new Exception("Error executing batch in transaction.", ex);
             }
         }
 
