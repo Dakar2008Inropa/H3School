@@ -415,7 +415,7 @@ namespace OwnORMForm
 
         private async Task LoadStudentsAsync()
         {
-            IReadOnlyList<Student> list = await _repository.GetStudentsAsync(default);
+            IReadOnlyList<Student> list = await _repository.GetAllAsync<Student>(default);
             _allStudents = list.OrderBy(s => s.StudentID).ToList();
             _studentsSource.DataSource = _allStudents;
             ApplyStudentFilter();
@@ -423,7 +423,7 @@ namespace OwnORMForm
 
         private async Task LoadClassesAsync()
         {
-            IReadOnlyList<Class> list = await _repository.GetClassesAsync(default);
+            IReadOnlyList<Class> list = await _repository.GetAllAsync<Class>(default);
             _allClasses = list.OrderBy(c => c.ClassID).ToList();
             _classesSource.DataSource = _allClasses;
             ApplyClassFilter();
@@ -431,7 +431,7 @@ namespace OwnORMForm
 
         private async Task LoadCoursesAsync()
         {
-            IReadOnlyList<Course> list = await _repository.GetCoursesAsync(default);
+            IReadOnlyList<Course> list = await _repository.GetAllAsync<Course>(default);
             _allCourses = list.OrderBy(c => c.CourseID).ToList();
             _coursesSource.DataSource = _allCourses;
             ApplyCourseFilter();
@@ -445,7 +445,7 @@ namespace OwnORMForm
             ApplyGradesFilter();
         }
 
-        private string ToSearchText(object value)
+        private static string ToSearchText(object value)
         {
             if (value == null)
                 return string.Empty;
@@ -691,7 +691,7 @@ namespace OwnORMForm
                 return;
             }
 
-            Student existing = await _repository.GetStudentByIdAsync(id, default);
+            Student existing = await _repository.GetByIdAsync<Student>(id, default);
             if (existing == null)
             {
                 MessageBox.Show("Elev ikke fundet.", "Advarsel", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -768,7 +768,8 @@ namespace OwnORMForm
 
             string inputDescription = PromptForText("Indtast beskrivelse (valgfrit):");
 
-            int rows = await _repository.AddClassAsync(inputName, inputDescription ?? string.Empty, default);
+            Class entity = new Class { ClassName = inputName, ClassDescription = inputDescription ?? string.Empty };
+            int rows = await _repository.InsertAsync(entity, default);
             MessageBox.Show(rows > 0 ? "Klasse oprettet." : "Ingen klasse oprettet.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
             await LoadClassesAsync();
         }
@@ -791,10 +792,21 @@ namespace OwnORMForm
                 return;
             }
 
-            string effectiveName = string.IsNullOrWhiteSpace(name) ? "(no change)" : name;
-            string effectiveDesc = string.IsNullOrWhiteSpace(description) ? "(no change)" : description;
+            Class current = await _repository.GetByIdAsync<Class>(id, default);
+            if (current == null)
+            {
+                MessageBox.Show("Klasse ikke fundet.", "Advarsel", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-            int rows = await _repository.UpdateClassAsync(id, effectiveName, effectiveDesc, default);
+            Class updated = new Class
+            {
+                ClassID = id,
+                ClassName = string.IsNullOrWhiteSpace(name) ? current.ClassName : name,
+                ClassDescription = string.IsNullOrWhiteSpace(description) ? current.ClassDescription : description
+            };
+
+            int rows = await _repository.UpdateAsync(updated, default);
             MessageBox.Show(rows > 0 ? "Klasse opdateret." : "Ingen ændringer foretaget.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
             await LoadClassesAsync();
         }
@@ -828,7 +840,8 @@ namespace OwnORMForm
                 return;
             }
 
-            int rows = await _repository.AddCourseAsync(name, default);
+            Course entity = new Course { CourseName = name };
+            int rows = await _repository.InsertAsync(entity, default);
             MessageBox.Show(rows > 0 ? "Fag oprettet." : "Ingen fag oprettet.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
             await LoadCoursesAsync();
         }
@@ -849,7 +862,8 @@ namespace OwnORMForm
                 return;
             }
 
-            int rows = await _repository.UpdateCourseAsync(id, name, default);
+            Course updated = new Course { CourseID = id, CourseName = name };
+            int rows = await _repository.UpdateAsync(updated, default);
             MessageBox.Show(rows > 0 ? "Fag opdateret." : "Ingen ændringer foretaget.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
             await LoadCoursesAsync();
         }

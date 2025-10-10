@@ -10,7 +10,7 @@ namespace OwnORM
     {
         public static async Task Main(string[] args)
         {
-            CancellationTokenSource cts = new CancellationTokenSource();
+            using CancellationTokenSource cts = new CancellationTokenSource();
 
             try
             {
@@ -23,7 +23,7 @@ namespace OwnORM
 
                         PrintMainMenu();
 
-                        string input = AnsiConsole.Prompt(
+                        string input = await AnsiConsole.PromptAsync(
                             new TextPrompt<string>("[cyan]Vælg et punkt[/]:").AllowEmpty());
 
                         switch (input)
@@ -90,7 +90,7 @@ namespace OwnORM
 
                 PrintStudentsMenu();
 
-                string input = AnsiConsole.Prompt(
+                string input = await AnsiConsole.PromptAsync(
                     new TextPrompt<string>("[cyan]Vælg et punkt[/]:").AllowEmpty());
 
                 switch (input)
@@ -161,174 +161,13 @@ namespace OwnORM
 
         #endregion
 
-        #region Classes Menu
-
-        private static async Task RunClassesMenuAsync(SchoolRepository repo, CancellationToken cancellationToken)
-        {
-            bool inMenu = true;
-            while (inMenu)
-            {
-                WriteHeader("Klasser");
-                PrintClassesMenu();
-
-                string input = AnsiConsole.Prompt(new TextPrompt<string>("[cyan]Vælg et punkt[/]:").AllowEmpty());
-
-                switch (input)
-                {
-                    case "1":
-                        await ListClassesAsync(repo, cancellationToken);
-                        break;
-                    case "2":
-                        await CreateClassAsync(repo, cancellationToken);
-                        break;
-                    case "3":
-                        await EditClassAsync(repo, cancellationToken);
-                        break;
-                    case "4":
-                        await DeleteClassCascadeAsync(repo, cancellationToken);
-                        break;
-                    case "0":
-                        inMenu = false;
-                        break;
-                    default:
-                        AnsiConsole.MarkupLine("[yellow]Ukendt valg. Prøv igen.[/]");
-                        break;
-                }
-            }
-        }
-
-        private static void PrintClassesMenu()
-        {
-            Panel panel = new Panel(
-                new Markup(
-                    "1) Vis alle klasser\n" +
-                    "2) Opret klasse\n" +
-                    "3) Rediger klasse\n" +
-                    "4) Slet klasse (kaskade)\n" +
-                    "0) Tilbage"))
-            {
-                Header = new PanelHeader("[bold yellow]Muligheder[/]"),
-                Border = BoxBorder.Rounded,
-                Expand = false
-            };
-            AnsiConsole.Write(panel);
-        }
-
-        #endregion
-
-        #region Courses Menu
-
-        private static async Task RunCoursesMenuAsync(SchoolRepository repo, CancellationToken cancellationToken)
-        {
-            bool inMenu = true;
-            while (inMenu)
-            {
-                WriteHeader("Fag");
-                PrintCoursesMenu();
-
-                string input = AnsiConsole.Prompt(new TextPrompt<string>("[cyan]Vælg et punkt[/]:").AllowEmpty());
-
-                switch (input)
-                {
-                    case "1":
-                        await ListCoursesAsync(repo, cancellationToken);
-                        break;
-                    case "2":
-                        await CreateCourseAsync(repo, cancellationToken);
-                        break;
-                    case "3":
-                        await EditCourseAsync(repo, cancellationToken);
-                        break;
-                    case "4":
-                        await DeleteCourseCascadeAsync(repo, cancellationToken);
-                        break;
-                    case "0":
-                        inMenu = false;
-                        break;
-                    default:
-                        AnsiConsole.MarkupLine("[yellow]Ukendt valg. Prøv igen.[/]");
-                        break;
-                }
-            }
-        }
-
-        private static void PrintCoursesMenu()
-        {
-            Panel panel = new Panel(
-                new Markup(
-                    "1) Vis alle fag\n" +
-                    "2) Opret fag\n" +
-                    "3) Rediger fag\n" +
-                    "4) Slet fag (kaskade)\n" +
-                    "0) Tilbage"))
-            {
-                Header = new PanelHeader("[bold yellow]Muligheder[/]"),
-                Border = BoxBorder.Rounded,
-                Expand = false
-            };
-            AnsiConsole.Write(panel);
-        }
-
-        #endregion
-
-        #region Grades Menu
-
-        private static async Task RunGradesMenuAsync(SchoolRepository repo, CancellationToken cancellationToken)
-        {
-            bool inMenu = true;
-            while (inMenu)
-            {
-                WriteHeader("Karakterer");
-                PrintGradesMenu();
-
-                string input = AnsiConsole.Prompt(new TextPrompt<string>("[cyan]Vælg et punkt[/]:").AllowEmpty());
-
-                switch (input)
-                {
-                    case "1":
-                        await ListGradesForStudentAsync(repo, cancellationToken);
-                        break;
-                    case "2":
-                        await UpdateGradeAsync(repo, cancellationToken);
-                        break;
-                    case "3":
-                        await DeleteGradeAsync(repo, cancellationToken);
-                        break;
-                    case "0":
-                        inMenu = false;
-                        break;
-                    default:
-                        AnsiConsole.MarkupLine("[yellow]Ukendt valg. Prøv igen.[/]");
-                        break;
-                }
-            }
-        }
-
-        private static void PrintGradesMenu()
-        {
-            Panel panel = new Panel(
-                new Markup(
-                    "1) Vis karakterer for elev\n" +
-                    "2) Opdater karakter\n" +
-                    "3) Slet karakter\n" +
-                    "0) Tilbage"))
-            {
-                Header = new PanelHeader("[bold yellow]Muligheder[/]"),
-                Border = BoxBorder.Rounded,
-                Expand = false
-            };
-            AnsiConsole.Write(panel);
-        }
-
-        #endregion
-
-        #region Student Operations
+        #region Students Operations
 
         private static async Task ListStudentsAsync(SchoolRepository repo, CancellationToken cancellationToken)
         {
             try
             {
-                IReadOnlyList<Student> students = await repo.GetStudentsAsync(cancellationToken);
+                IReadOnlyList<Student> students = await repo.GetAllAsync<Student>(cancellationToken);
 
                 if (students.Count == 0)
                 {
@@ -390,7 +229,16 @@ namespace OwnORM
 
                 StudentType studentType = PromptStudentType();
 
-                int rows = await repo.AddStudentAsync(name, address, classId, studentType, cancellationToken);
+                Student entity = new Student
+                {
+                    StudentName = name,
+                    StudentAddress = address ?? string.Empty,
+                    ClassID = classId,
+                    StudentType = studentType,
+                    StudentNumberOfCourses = 0,
+                    StudentSumOfAllCharacters = 0
+                };
+                int rows = await repo.InsertAsync(entity, cancellationToken);
                 AnsiConsole.MarkupLine(rows > 0 ? "[green]Elev oprettet.[/]" : "[yellow]Ingen elev oprettet.[/]");
             }
             catch (Exception ex)
@@ -405,7 +253,7 @@ namespace OwnORM
             {
                 int id = PromptInt("Indtast elev ID der skal redigeres", 0, allowZero: false);
 
-                Student current = await repo.GetStudentByIdAsync(id, cancellationToken);
+                Student current = await repo.GetByIdAsync<Student>(id, cancellationToken);
                 if (current == null)
                 {
                     AnsiConsole.MarkupLine("[yellow]Elev findes ikke.[/]");
@@ -421,16 +269,68 @@ namespace OwnORM
                 AnsiConsole.MarkupLine("[cyan]Tryk Enter uden input for at beholde nuværende elevtype.[/]");
                 StudentType studentType = PromptOptionalStudentType(current.StudentType);
 
-                string effectiveName = string.IsNullOrWhiteSpace(name) ? current.StudentName : name;
-                string effectiveAddress = string.IsNullOrWhiteSpace(address) ? current.StudentAddress : address;
-                int effectiveClassId = classId == 0 ? current.ClassID : classId;
+                Student updated = new Student
+                {
+                    StudentID = current.StudentID,
+                    StudentName = string.IsNullOrWhiteSpace(name) ? current.StudentName : name,
+                    StudentAddress = string.IsNullOrWhiteSpace(address) ? current.StudentAddress : address,
+                    ClassID = classId == 0 ? current.ClassID : classId,
+                    StudentType = studentType == 0 ? current.StudentType : studentType,
+                    StudentNumberOfCourses = current.StudentNumberOfCourses,
+                    StudentSumOfAllCharacters = current.StudentSumOfAllCharacters
+                };
 
-                int rows = await repo.UpdateStudentWithTypeStudentTypeAsync(id, effectiveName, effectiveAddress, effectiveClassId, studentType, cancellationToken);
+                int rows = await repo.UpdateAsync(updated, cancellationToken);
                 AnsiConsole.MarkupLine(rows > 0 ? "[green]Elev opdateret.[/]" : "[yellow]Ingen ændring.[/]");
             }
             catch (Exception ex)
             {
                 AnsiConsole.MarkupLine($"[red]Fejl ved redigering af elev:[/] {Escape(ex.Message)}");
+            }
+        }
+
+        private static async Task ShowSingleStudentAsync(SchoolRepository repo, CancellationToken cancellationToken)
+        {
+            try
+            {
+                int id = PromptInt("Indtast elev ID", 0, allowZero: false);
+                Student s = await repo.GetByIdAsync<Student>(id, cancellationToken);
+                if (s == null)
+                {
+                    AnsiConsole.MarkupLine("[yellow]Elev findes ikke.[/]");
+                    return;
+                }
+
+                double averageGrade = s.StudentNumberOfCourses > 0 ? (double)s.StudentSumOfAllCharacters / s.StudentNumberOfCourses : 0.0;
+                string averageFormatted = averageGrade.ToString("0.0", CultureInfo.InvariantCulture);
+
+                string typeText = s.StudentType.ToString();
+
+                Table table = new Table
+                {
+                    Title = new TableTitle($"[bold yellow]Elev ID {s.StudentID}[/]"),
+                    Border = TableBorder.Rounded
+                };
+                table.AddColumn("[bold]Navn[/]");
+                table.AddColumn("[bold]Adresse[/]");
+                table.AddColumn("[bold]KlasseID[/]");
+                table.AddColumn("[bold]Antal fag[/]");
+                table.AddColumn("[bold]Karakter Gennemsnit[/]");
+                table.AddColumn("[bold]Elevtype[/]");
+
+                table.AddRow(
+                    $"[green]{Escape(s.StudentName)}[/]",
+                    $"[white]{Escape(s.StudentAddress)}[/]",
+                    $"[white]{s.ClassID}[/]",
+                    $"[white]{s.StudentNumberOfCourses}[/]",
+                    $"[white]{averageFormatted}[/]",
+                    $"[white]{typeText}[/]");
+
+                AnsiConsole.Write(table);
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine($"[red]Fejl ved hentning af elev:[/] {Escape(ex.Message)}");
             }
         }
 
@@ -571,51 +471,6 @@ namespace OwnORM
             }
         }
 
-        private static async Task ShowSingleStudentAsync(SchoolRepository repo, CancellationToken cancellationToken)
-        {
-            try
-            {
-                int id = PromptInt("Indtast elev ID", 0, allowZero: false);
-                Student s = await repo.GetStudentByIdAsync(id, cancellationToken);
-                if (s == null)
-                {
-                    AnsiConsole.MarkupLine("[yellow]Elev findes ikke.[/]");
-                    return;
-                }
-
-                double averageGrade = s.StudentNumberOfCourses > 0 ? (double)s.StudentSumOfAllCharacters / s.StudentNumberOfCourses : 0.0;
-                string averageFormatted = averageGrade.ToString("0.0", CultureInfo.InvariantCulture);
-
-                string typeText = s.StudentType.ToString();
-
-                Table table = new Table
-                {
-                    Title = new TableTitle($"[bold yellow]Elev ID {s.StudentID}[/]"),
-                    Border = TableBorder.Rounded
-                };
-                table.AddColumn("[bold]Navn[/]");
-                table.AddColumn("[bold]Adresse[/]");
-                table.AddColumn("[bold]KlasseID[/]");
-                table.AddColumn("[bold]Antal fag[/]");
-                table.AddColumn("[bold]Karakter Gennemsnit[/]");
-                table.AddColumn("[bold]Elevtype[/]");
-
-                table.AddRow(
-                    $"[green]{Escape(s.StudentName)}[/]",
-                    $"[white]{Escape(s.StudentAddress)}[/]",
-                    $"[white]{s.ClassID}[/]",
-                    $"[white]{s.StudentNumberOfCourses}[/]",
-                    $"[white]{averageFormatted}[/]",
-                    $"[white]{typeText}[/]");
-
-                AnsiConsole.Write(table);
-            }
-            catch (Exception ex)
-            {
-                AnsiConsole.MarkupLine($"[red]Fejl ved hentning af elev:[/] {Escape(ex.Message)}");
-            }
-        }
-
         private static async Task DeleteStudentCascadeAsync(SchoolRepository repo, CancellationToken cancellationToken)
         {
             try
@@ -639,13 +494,68 @@ namespace OwnORM
 
         #endregion
 
+        #region Classes Menu
+
+        private static async Task RunClassesMenuAsync(SchoolRepository repo, CancellationToken cancellationToken)
+        {
+            bool inMenu = true;
+            while (inMenu)
+            {
+                WriteHeader("Klasser");
+                PrintClassesMenu();
+
+                string input = await AnsiConsole.PromptAsync(new TextPrompt<string>("[cyan]Vælg et punkt[/]:").AllowEmpty());
+
+                switch (input)
+                {
+                    case "1":
+                        await ListClassesAsync(repo, cancellationToken);
+                        break;
+                    case "2":
+                        await CreateClassAsync(repo, cancellationToken);
+                        break;
+                    case "3":
+                        await EditClassAsync(repo, cancellationToken);
+                        break;
+                    case "4":
+                        await DeleteClassCascadeAsync(repo, cancellationToken);
+                        break;
+                    case "0":
+                        inMenu = false;
+                        break;
+                    default:
+                        AnsiConsole.MarkupLine("[yellow]Ukendt valg. Prøv igen.[/]");
+                        break;
+                }
+            }
+        }
+
+        private static void PrintClassesMenu()
+        {
+            Panel panel = new Panel(
+                new Markup(
+                    "1) Vis alle klasser\n" +
+                    "2) Opret klasse\n" +
+                    "3) Rediger klasse\n" +
+                    "4) Slet klasse (kaskade)\n" +
+                    "0) Tilbage"))
+            {
+                Header = new PanelHeader("[bold yellow]Muligheder[/]"),
+                Border = BoxBorder.Rounded,
+                Expand = false
+            };
+            AnsiConsole.Write(panel);
+        }
+
+        #endregion
+
         #region Class Operations
 
         private static async Task ListClassesAsync(SchoolRepository repo, CancellationToken cancellationToken)
         {
             try
             {
-                IReadOnlyList<Class> classes = await repo.GetClassesAsync(cancellationToken);
+                IReadOnlyList<Class> classes = await repo.GetAllAsync<Class>(cancellationToken);
                 if (classes.Count == 0)
                 {
                     AnsiConsole.MarkupLine("[yellow]Ingen klasser fundet.[/]");
@@ -684,7 +594,8 @@ namespace OwnORM
                 string name = PromptString("Indtast klassenavn", true);
                 string desc = PromptString("Indtast beskrivelse (valgfri)", false);
 
-                int rows = await repo.AddClassAsync(name, desc, cancellationToken);
+                Class entity = new Class { ClassName = name ?? string.Empty, ClassDescription = desc ?? string.Empty };
+                int rows = await repo.InsertAsync(entity, cancellationToken);
                 AnsiConsole.MarkupLine(rows > 0 ? "[green]Klasse oprettet.[/]" : "[yellow]Ingen klasse oprettet.[/]");
             }
             catch (Exception ex)
@@ -698,28 +609,31 @@ namespace OwnORM
             try
             {
                 int id = PromptInt("Indtast klasse ID der skal redigeres", 0, allowZero: false);
-                // Ingen GetClassById kald her (kunne tilføjes), vi forsøger opdatering direkte.
+
+                Class current = await repo.GetByIdAsync<Class>(id, cancellationToken);
+                if (current == null)
+                {
+                    AnsiConsole.MarkupLine("[yellow]Klasse findes ikke.[/]");
+                    return;
+                }
 
                 string name = PromptString("Indtast nyt navn (tom = behold)", false);
                 string desc = PromptString("Indtast ny beskrivelse (tom = behold)", false);
 
-                // Because we do not fetch existing row (to keep it light), require at least one input:
                 if (string.IsNullOrWhiteSpace(name) && string.IsNullOrWhiteSpace(desc))
                 {
                     AnsiConsole.MarkupLine("[yellow]Ingen ændringer angivet.[/]");
                     return;
                 }
 
-                // If you want to retain existing values you'd need a GetClassById; skipping for brevity.
-                string effectiveName = string.IsNullOrWhiteSpace(name) ? "(ingen ændring)" : name;
-                string effectiveDesc = string.IsNullOrWhiteSpace(desc) ? "(ingen ændring)" : desc;
+                Class updated = new Class
+                {
+                    ClassID = current.ClassID,
+                    ClassName = string.IsNullOrWhiteSpace(name) ? current.ClassName : name,
+                    ClassDescription = string.IsNullOrWhiteSpace(desc) ? current.ClassDescription : desc
+                };
 
-                // We still pass empty strings if user left blank; optionally fetch original row to merge.
-                int rows = await repo.UpdateClassAsync(id,
-                    string.IsNullOrWhiteSpace(name) ? effectiveName : name,
-                    string.IsNullOrWhiteSpace(desc) ? effectiveDesc : desc,
-                    cancellationToken);
-
+                int rows = await repo.UpdateAsync(updated, cancellationToken);
                 AnsiConsole.MarkupLine(rows > 0 ? "[green]Klasse opdateret.[/]" : "[yellow]Ingen ændring.[/]");
             }
             catch (Exception ex)
@@ -751,13 +665,68 @@ namespace OwnORM
 
         #endregion
 
+        #region Courses Menu
+
+        private static async Task RunCoursesMenuAsync(SchoolRepository repo, CancellationToken cancellationToken)
+        {
+            bool inMenu = true;
+            while (inMenu)
+            {
+                WriteHeader("Fag");
+                PrintCoursesMenu();
+
+                string input = await AnsiConsole.PromptAsync(new TextPrompt<string>("[cyan]Vælg et punkt[/]:").AllowEmpty());
+
+                switch (input)
+                {
+                    case "1":
+                        await ListCoursesAsync(repo, cancellationToken);
+                        break;
+                    case "2":
+                        await CreateCourseAsync(repo, cancellationToken);
+                        break;
+                    case "3":
+                        await EditCourseAsync(repo, cancellationToken);
+                        break;
+                    case "4":
+                        await DeleteCourseCascadeAsync(repo, cancellationToken);
+                        break;
+                    case "0":
+                        inMenu = false;
+                        break;
+                    default:
+                        AnsiConsole.MarkupLine("[yellow]Ukendt valg. Prøv igen.[/]");
+                        break;
+                }
+            }
+        }
+
+        private static void PrintCoursesMenu()
+        {
+            Panel panel = new Panel(
+                new Markup(
+                    "1) Vis alle fag\n" +
+                    "2) Opret fag\n" +
+                    "3) Rediger fag\n" +
+                    "4) Slet fag (kaskade)\n" +
+                    "0) Tilbage"))
+            {
+                Header = new PanelHeader("[bold yellow]Muligheder[/]"),
+                Border = BoxBorder.Rounded,
+                Expand = false
+            };
+            AnsiConsole.Write(panel);
+        }
+
+        #endregion
+
         #region Course Operations
 
         private static async Task ListCoursesAsync(SchoolRepository repo, CancellationToken cancellationToken)
         {
             try
             {
-                IReadOnlyList<Course> courses = await repo.GetCoursesAsync(cancellationToken);
+                IReadOnlyList<Course> courses = await repo.GetAllAsync<Course>(cancellationToken);
                 if (courses.Count == 0)
                 {
                     AnsiConsole.MarkupLine("[yellow]Ingen fag fundet.[/]");
@@ -792,7 +761,8 @@ namespace OwnORM
             try
             {
                 string name = PromptString("Indtast fagnavn", true);
-                int rows = await repo.AddCourseAsync(name, cancellationToken);
+                Course entity = new Course { CourseName = name ?? string.Empty };
+                int rows = await repo.InsertAsync(entity, cancellationToken);
                 AnsiConsole.MarkupLine(rows > 0 ? "[green]Fag oprettet.[/]" : "[yellow]Ingen fag oprettet.[/]");
             }
             catch (Exception ex)
@@ -808,13 +778,21 @@ namespace OwnORM
                 int id = PromptInt("Indtast fag ID der skal redigeres", 0, allowZero: false);
                 string name = PromptString("Indtast nyt navn (tom = behold)", false);
 
+                Course current = await repo.GetByIdAsync<Course>(id, cancellationToken);
+                if (current == null)
+                {
+                    AnsiConsole.MarkupLine("[yellow]Fag findes ikke.[/]");
+                    return;
+                }
+
                 if (string.IsNullOrWhiteSpace(name))
                 {
                     AnsiConsole.MarkupLine("[yellow]Ingen ændringer angivet.[/]");
                     return;
                 }
 
-                int rows = await repo.UpdateCourseAsync(id, name, cancellationToken);
+                Course updated = new Course { CourseID = id, CourseName = name };
+                int rows = await repo.UpdateAsync(updated, cancellationToken);
                 AnsiConsole.MarkupLine(rows > 0 ? "[green]Fag opdateret.[/]" : "[yellow]Ingen ændring.[/]");
             }
             catch (Exception ex)
@@ -841,6 +819,57 @@ namespace OwnORM
             {
                 AnsiConsole.MarkupLine($"[red]Fejl ved sletning af fag:[/] {Escape(ex.Message)}");
             }
+        }
+
+        #endregion
+
+        #region Grades Menu
+
+        private static async Task RunGradesMenuAsync(SchoolRepository repo, CancellationToken cancellationToken)
+        {
+            bool inMenu = true;
+            while (inMenu)
+            {
+                WriteHeader("Karakterer");
+                PrintGradesMenu();
+
+                string input = await AnsiConsole.PromptAsync(new TextPrompt<string>("[cyan]Vælg et punkt[/]:").AllowEmpty());
+
+                switch (input)
+                {
+                    case "1":
+                        await ListGradesForStudentAsync(repo, cancellationToken);
+                        break;
+                    case "2":
+                        await UpdateGradeAsync(repo, cancellationToken);
+                        break;
+                    case "3":
+                        await DeleteGradeAsync(repo, cancellationToken);
+                        break;
+                    case "0":
+                        inMenu = false;
+                        break;
+                    default:
+                        AnsiConsole.MarkupLine("[yellow]Ukendt valg. Prøv igen.[/]");
+                        break;
+                }
+            }
+        }
+
+        private static void PrintGradesMenu()
+        {
+            Panel panel = new Panel(
+                new Markup(
+                    "1) Vis karakterer for elev\n" +
+                    "2) Opdater karakter\n" +
+                    "3) Slet karakter\n" +
+                    "0) Tilbage"))
+            {
+                Header = new PanelHeader("[bold yellow]Muligheder[/]"),
+                Border = BoxBorder.Rounded,
+                Expand = false
+            };
+            AnsiConsole.Write(panel);
         }
 
         #endregion

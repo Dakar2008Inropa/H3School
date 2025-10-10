@@ -36,12 +36,12 @@ namespace OwnORMForm.Forms
         {
             try
             {
-                IReadOnlyList<Class> classes = await _repository.GetClassesAsync(default);
-                IReadOnlyList<Course> courses = await _repository.GetCoursesAsync(default);
+                IReadOnlyList<Class> classes = await _repository.GetAllAsync<Class>(default);
+                IReadOnlyList<Course> courses = await _repository.GetAllAsync<Course>(default);
                 _classes = classes.OrderBy(c => c.ClassName).ToList();
                 _courses = courses.OrderBy(c => c.CourseName).ToList();
 
-                Student student = await _repository.GetStudentByIdAsync(_studentId, default);
+                Student student = await _repository.GetByIdAsync<Student>(_studentId, default);
                 if (student == null)
                 {
                     MessageBox.Show("Elev ikke fundet.", "Advarsel", MessageBoxButtons.OK, MessageBoxIcon.Warning);

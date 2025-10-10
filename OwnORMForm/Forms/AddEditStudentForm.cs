@@ -86,7 +86,7 @@ namespace OwnORMForm.Forms
 
         private async Task LoadClassesAsync()
         {
-            IReadOnlyList<Class> list = await _repository.GetClassesAsync(default);
+            IReadOnlyList<Class> list = await _repository.GetAllAsync<Class>(default);
             _classes = list.OrderBy(c => c.ClassName).ToList();
 
             ClassComboBox.DisplayMember = nameof(Class.ClassName);
@@ -133,13 +133,18 @@ namespace OwnORMForm.Forms
             {
                 if (_isEdit && _existing != null)
                 {
-                    int rows = await _repository.UpdateStudentWithTypeStudentTypeAsync(
-                        _existing.StudentID,
-                        name,
-                        address,
-                        selectedClass.ClassID,
-                        type,
-                        default);
+                    Student updated = new Student
+                    {
+                        StudentID = _existing.StudentID,
+                        StudentName = name,
+                        StudentAddress = address,
+                        ClassID = selectedClass.ClassID,
+                        StudentType = type,
+                        StudentNumberOfCourses = _existing.StudentNumberOfCourses,    
+                        StudentSumOfAllCharacters = _existing.StudentSumOfAllCharacters    
+                    };
+
+                    int rows = await _repository.UpdateAsync(updated, default);
 
                     if (rows <= 0)
                     {
@@ -153,12 +158,17 @@ namespace OwnORMForm.Forms
                     return;
                 }
 
-                int created = await _repository.AddStudentAsync(
-                    name,
-                    address,
-                    selectedClass.ClassID,
-                    type,
-                    default);
+                Student createdEntity = new Student
+                {
+                    StudentName = name,
+                    StudentAddress = address,
+                    ClassID = selectedClass.ClassID,
+                    StudentType = type,
+                    StudentNumberOfCourses = 0,
+                    StudentSumOfAllCharacters = 0
+                };
+
+                int created = await _repository.InsertAsync(createdEntity, default);
 
                 if (created <= 0)
                 {
