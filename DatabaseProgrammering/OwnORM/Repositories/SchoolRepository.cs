@@ -15,27 +15,10 @@ namespace OwnORM.Repositories
             _db = new SqlDb(connectionString);
         }
 
-        public Task<IReadOnlyList<StudentClassViewRow>> GetStudentClassViewAsync(CancellationToken cancellationToken)
-        {
-            string sql = "SELECT StudentID, StudentName, StudentAddress, ClassName FROM dbo.StudentClassView";
-            return _db.QueryAsync<StudentClassViewRow>(sql, null, cancellationToken);
-        }
-
         public Task<IReadOnlyList<FullStudentInfoRow>> GetFullStudentInfoViewAsync(CancellationToken cancellationToken)
         {
             string sql = "SELECT StudentID, StudentName, StudentAddress, StudentNumberOfCourses, ClassName, CourseName FROM dbo.FullStudentInfoView";
             return _db.QueryAsync<FullStudentInfoRow>(sql, null, cancellationToken);
-        }
-
-        public Task<IReadOnlyList<TestViewRow>> GetTestViewAsync(CancellationToken cancellationToken)
-        {
-            string sql = "SELECT CourseName, StudentName, ClassID, Grade, ClassName FROM dbo.Test_View";
-            return _db.QueryAsync<TestViewRow>(sql, null, cancellationToken);
-        }
-
-        public Task<IReadOnlyList<FullStudentInfoRow>> GetFullStudentInfoSpAsync(CancellationToken cancellationToken)
-        {
-            return _db.QueryStoredAsync<FullStudentInfoRow>("dbo.FullStudentInfo_SP", null, cancellationToken);
         }
 
         public Task<IReadOnlyList<FullStudentInfoRow>> GetFullStudentInfoSpByIdAsync(int studentId, CancellationToken cancellationToken)
@@ -66,46 +49,6 @@ VALUES (@StudentName, @StudentAddress, @ClassID, 0, 0, @StudentType);";
             };
 
             return await _db.ExecuteAsync(sql, p, cancellationToken).ConfigureAwait(false);
-        }
-
-        public async Task<int> AddStudentReturnIdAsync(string studentName, string studentAddress, int classId, StudentType studentType, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrWhiteSpace(studentName))
-                throw new ArgumentException("Student name must not be empty.", nameof(studentName));
-
-            string sql = @"INSERT INTO dbo.Student (StudentName, StudentAddress, ClassID, StudentNumberOfCourses, StudentSumOfAllCharacters, StudentType)
-                           OUTPUT INSERTED.StudentID
-                           VALUES (@StudentName, @StudentAddress, @ClassID, 0, 0, @StudentType);";
-
-            Dictionary<string, object> p = new Dictionary<string, object>
-            {
-                {"@StudentName", studentName },
-                {"@StudentAddress", studentAddress ?? string.Empty },
-                {"@ClassID", classId },
-                {"@StudentType", (int)studentType }
-            };
-
-            return await _db.ExecuteScalarAsync<int>(sql, p, cancellationToken).ConfigureAwait(false);
-        }
-
-        public Task<int> UpdateStudentAsync(int studentId, string studentName, string studentAddress, int classId, CancellationToken cancellationToken)
-        {
-            string sql = @"
-UPDATE dbo.Student
-SET StudentName = @StudentName,
-    StudentAddress = @StudentAddress,
-    ClassID = @ClassID
-WHERE StudentID = @StudentID;";
-
-            Dictionary<string, object> p = new Dictionary<string, object>
-            {
-                { "@StudentID", studentId },
-                { "@StudentName", string.IsNullOrWhiteSpace(studentName) ? string.Empty : studentName },
-                { "@StudentAddress", studentAddress ?? string.Empty },
-                { "@ClassID", classId }
-            };
-
-            return _db.ExecuteAsync(sql, p, cancellationToken);
         }
 
         public Task<int> UpdateStudentWithTypeStudentTypeAsync(int studentId, string studentName, string studentAddress, int classId, StudentType studentType, CancellationToken cancellationToken)
@@ -198,14 +141,6 @@ WHEN NOT MATCHED THEN
             return _db.QueryAsync<Class>(sql, null, cancellationToken);
         }
 
-        public async Task<Class> GetClassByIdAsync(int classId, CancellationToken cancellationToken)
-        {
-            string sql = "SELECT ClassID, ClassName, ClassDescription FROM dbo.Class WHERE ClassID = @ClassID;";
-            Dictionary<string, object> p = new Dictionary<string, object> { { "@ClassID", classId } };
-            IReadOnlyList<Class> rows = await _db.QueryAsync<Class>(sql, p, cancellationToken).ConfigureAwait(false);
-            return rows.FirstOrDefault();
-        }
-
         public Task<int> AddClassAsync(string name, string description, CancellationToken cancellationToken)
         {
             string sql = @"INSERT INTO dbo.Class (ClassName, ClassDescription) VALUES (@Name, @Desc);";
@@ -257,14 +192,6 @@ WHEN NOT MATCHED THEN
         {
             string sql = "SELECT CourseID, CourseName FROM dbo.Course";
             return _db.QueryAsync<Course>(sql, null, cancellationToken);
-        }
-
-        public async Task<Course> GetCourseByIdAsync(int courseId, CancellationToken cancellationToken)
-        {
-            string sql = "SELECT CourseID, CourseName FROM dbo.Course WHERE CourseID = @CourseID;";
-            Dictionary<string, object> p = new Dictionary<string, object> { { "@CourseID", courseId } };
-            IReadOnlyList<Course> rows = await _db.QueryAsync<Course>(sql, p, cancellationToken).ConfigureAwait(false);
-            return rows.FirstOrDefault();
         }
 
         public Task<int> AddCourseAsync(string courseName, CancellationToken cancellationToken)

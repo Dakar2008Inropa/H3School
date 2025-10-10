@@ -1,7 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Diagnostics;
-using System.Globalization;
 
 namespace OwnORM.Data
 {
@@ -64,19 +63,6 @@ namespace OwnORM.Data
             }
         }
 
-        public async Task<int> ExecuteStoredAsync(string procName, IDictionary<string, object> parameters, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrWhiteSpace(procName))
-                throw new ArgumentException("Procedure name must not be empty.", nameof(procName));
-
-            await EnsureOpenAsync(cancellationToken).ConfigureAwait(false);
-
-            using (SqlCommand cmd = CreateCommand(_connection, procName, CommandType.StoredProcedure, parameters))
-            {
-                return await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-            }
-        }
-
         public async Task<IReadOnlyList<T>> QueryAsync<T>(string sql, IDictionary<string, object> parameters, CancellationToken cancellationToken) where T : new()
         {
             if (string.IsNullOrWhiteSpace(sql))
@@ -116,22 +102,6 @@ namespace OwnORM.Data
                 }
 
                 return list;
-            }
-        }
-
-        public async Task<T> ExecuteScalarAsync<T>(string sql, IDictionary<string, object> parameters, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrWhiteSpace(sql))
-                throw new ArgumentException("SQL must not be empty.", nameof(sql));
-
-            await EnsureOpenAsync(cancellationToken).ConfigureAwait(false);
-
-            using (SqlCommand cmd = CreateCommand(_connection, sql, CommandType.Text, parameters))
-            {
-                object result = await cmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-                if (result == null || result is DBNull)
-                    return default;
-                return (T)Convert.ChangeType(result, typeof(T), CultureInfo.InvariantCulture);
             }
         }
 
@@ -185,29 +155,6 @@ namespace OwnORM.Data
                 }
 
                 await tx.DisposeAsync();
-            }
-        }
-
-        public async Task<IReadOnlyList<T>> QueryWithFactoryAsync<T>(string sql, IDictionary<string, object> parameters, Func<IDataRecord, T> factory, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrWhiteSpace(sql))
-                throw new ArgumentException("SQL must not be empty.", nameof(sql));
-
-            if (factory == null)
-                throw new ArgumentException("Factory must not be null.", nameof(factory));
-
-            await EnsureOpenAsync(cancellationToken).ConfigureAwait(false);
-
-            using (SqlCommand cmd = CreateCommand(_connection, sql, CommandType.Text, parameters))
-            using (SqlDataReader reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
-            {
-                List<T> list = new List<T>();
-                while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-                {
-                    T item = factory(reader);
-                    list.Add(item);
-                }
-                return list;
             }
         }
 
