@@ -35,8 +35,10 @@ namespace OwnORMForm.Forms
             InitializeComponent();
             WireEvents();
 
-            Text = "Rediger elev";
-            Title.Text = "Rediger elev";
+            string title = $"Rediger - {existing.StudentName}";
+
+            Text = title;
+            Title.Text = title;
             button1.Text = "Gem ændringer";
 
             Shown += async (s, e) => await InitializeAsync();

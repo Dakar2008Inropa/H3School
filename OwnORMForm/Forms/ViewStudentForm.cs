@@ -19,9 +19,6 @@ namespace OwnORMForm.Forms
             InitializeComponent();
             WireEvents();
 
-            Text = "Vis elev";
-            Title.Text = "Vis elev";
-
             ConfigureGrid(StudentGridView);
             SetupGradesGridColumns();
 
@@ -52,6 +49,11 @@ namespace OwnORMForm.Forms
                     Close();
                     return;
                 }
+
+                string title = $"Vis elev: {student.StudentName} (ID: {student.StudentID})";
+
+                Text = title;
+                Title.Text = title;
 
                 NameValue.Text = student.StudentName ?? string.Empty;
                 AddressValue.Text = student.StudentAddress ?? string.Empty;

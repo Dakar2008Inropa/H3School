@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Diagnostics;
 using System.Globalization;
 
 namespace OwnORM.Data
@@ -13,7 +14,7 @@ namespace OwnORM.Data
         public SqlDb(string connectionString)
         {
             if (string.IsNullOrWhiteSpace(connectionString))
-                throw new ArgumentException("Connection strinbg must not be empty", nameof(connectionString));
+                throw new ArgumentException("Connection string must not be empty", nameof(connectionString));
 
             _connectionString = connectionString;
         }
@@ -138,8 +139,10 @@ namespace OwnORM.Data
         {
             await EnsureOpenAsync(cancellationToken).ConfigureAwait(false);
 
-            using SqlTransaction tx = _connection.BeginTransaction();
+            SqlTransaction tx = (SqlTransaction)await _connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+
             int total = 0;
+            bool committed = false;
 
             try
             {
@@ -148,24 +151,40 @@ namespace OwnORM.Data
                     if (string.IsNullOrWhiteSpace(Sql))
                         continue;
 
-                    using SqlCommand cmd = CreateCommand(_connection, Sql, CommandType.Text, Parameters, tx);
-                    int affected = await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-                    total += affected;
+                    using (SqlCommand cmd = CreateCommand(_connection, Sql, CommandType.Text, Parameters, tx))
+                    {
+                        int affected = await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                        total += affected;
+                    }
                 }
-                tx.Commit();
+
+                await tx.CommitAsync(cancellationToken).ConfigureAwait(false);
+                committed = true;
                 return total;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
-                try
-                {
-                    tx.Rollback();
-                }
-                catch
-                {
-                    // Ignore rollback errors
-                }
                 throw new Exception("Error executing batch in transaction.", ex);
+            }
+            finally
+            {
+                if (!committed)
+                {
+                    try
+                    {
+                        await tx.RollbackAsync(cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (Exception rollbackEx)
+                    {
+                        Debug.WriteLine($"Rollback failed: {rollbackEx}");
+                    }
+                }
+
+                await tx.DisposeAsync();
             }
         }
 

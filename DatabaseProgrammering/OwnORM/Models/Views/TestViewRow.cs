@@ -1,7 +1,7 @@
 ﻿namespace OwnORM.Models.Views
 {
     /// <summary>
-    /// Represents dbo.TestView row.
+    /// Represents dbo.Test_View row.
     /// </summary>
     public sealed class TestViewRow
     {

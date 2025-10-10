@@ -54,7 +54,7 @@ namespace OwnORM.Repositories
             if (string.IsNullOrWhiteSpace(studentName))
                 throw new ArgumentException("Student name must not be empty.", nameof(studentName));
 
-            string sql = @"INSERT INTO dbo.Student (StudentName, StudentAddress, ClassID, StudentNumberOfCourses, StudentSum,OfAllCharacters, StudentType)
+            string sql = @"INSERT INTO dbo.Student (StudentName, StudentAddress, ClassID, StudentNumberOfCourses, StudentSumOfAllCharacters, StudentType)
 VALUES (@StudentName, @StudentAddress, @ClassID, 0, 0, @StudentType);";
 
             Dictionary<string, object> p = new Dictionary<string, object>

@@ -88,6 +88,7 @@ namespace OwnORMForm
             grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             grid.MultiSelect = false;
+            grid.RowHeadersVisible = false;
 
             grid.BackgroundColor = Color.FromArgb(33, 33, 33);
             grid.BorderStyle = BorderStyle.None;
@@ -106,8 +107,20 @@ namespace OwnORMForm
             grid.ColumnHeadersDefaultCellStyle.ForeColor = Color.Gainsboro;
             grid.ColumnHeadersDefaultCellStyle.Font = new Font("Verdana", 9.75F, FontStyle.Bold);
 
+            grid.ColumnHeadersDefaultCellStyle.SelectionBackColor = grid.ColumnHeadersDefaultCellStyle.BackColor;
+            grid.ColumnHeadersDefaultCellStyle.SelectionForeColor = grid.ColumnHeadersDefaultCellStyle.ForeColor;
+
             grid.RowHeadersDefaultCellStyle.BackColor = Color.FromArgb(45, 45, 45);
             grid.RowHeadersDefaultCellStyle.ForeColor = Color.Gainsboro;
+
+            grid.RowHeadersDefaultCellStyle.SelectionBackColor = grid.RowHeadersDefaultCellStyle.BackColor;
+            grid.RowHeadersDefaultCellStyle.SelectionForeColor = grid.RowHeadersDefaultCellStyle.ForeColor;
+
+            grid.AllowUserToResizeColumns = false;
+            grid.AllowUserToResizeRows = false;
+
+            grid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.EnableResizing;
+            grid.ColumnHeadersHeight = 40;
         }
 
         private void SetupStudentsGridColumns()
@@ -120,8 +133,11 @@ namespace OwnORMForm
                 HeaderText = "ID",
                 ReadOnly = true,
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
-                FillWeight = 10
+                FillWeight = 10,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
             };
+            colId.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
             DataGridViewTextBoxColumn colName = new DataGridViewTextBoxColumn
             {
                 DataPropertyName = nameof(Student.StudentName),
@@ -152,24 +168,32 @@ namespace OwnORMForm
                 HeaderText = "Elevtype",
                 ReadOnly = true,
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
-                FillWeight = 10
+                FillWeight = 10,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
             };
+            colType.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
             DataGridViewTextBoxColumn colCount = new DataGridViewTextBoxColumn
             {
                 DataPropertyName = nameof(Student.StudentNumberOfCourses),
                 HeaderText = "Antal fag",
                 ReadOnly = true,
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
-                FillWeight = 10
+                FillWeight = 10,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
             };
+            colCount.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
             DataGridViewTextBoxColumn colAvg = new DataGridViewTextBoxColumn
             {
                 Name = "AverageColumn",
                 HeaderText = "Gennemsnit",
                 ReadOnly = true,
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
-                FillWeight = 10
+                FillWeight = 10,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
             };
+            colAvg.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
             StudentDataGridView.Columns.AddRange(colId, colName, colAddress, colClassName, colType, colCount, colAvg);
         }
@@ -184,7 +208,8 @@ namespace OwnORMForm
                 HeaderText = "ID",
                 ReadOnly = true,
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
-                FillWeight = 10
+                FillWeight = 10,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
             };
             DataGridViewTextBoxColumn colName = new DataGridViewTextBoxColumn
             {
@@ -216,7 +241,8 @@ namespace OwnORMForm
                 HeaderText = "ID",
                 ReadOnly = true,
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
-                FillWeight = 15
+                FillWeight = 15,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
             };
             DataGridViewTextBoxColumn colName = new DataGridViewTextBoxColumn
             {
@@ -240,7 +266,8 @@ namespace OwnORMForm
                 HeaderText = "ID",
                 ReadOnly = true,
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
-                FillWeight = 10
+                FillWeight = 10,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
             };
             DataGridViewTextBoxColumn colStudent = new DataGridViewTextBoxColumn
             {
@@ -248,7 +275,8 @@ namespace OwnORMForm
                 HeaderText = "Elev-ID",
                 ReadOnly = true,
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
-                FillWeight = 15
+                FillWeight = 15,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
             };
             DataGridViewTextBoxColumn colClassName = new DataGridViewTextBoxColumn
             {
@@ -264,7 +292,8 @@ namespace OwnORMForm
                 HeaderText = "Fag-ID",
                 ReadOnly = true,
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
-                FillWeight = 15
+                FillWeight = 15,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
             };
             DataGridViewTextBoxColumn colGrade = new DataGridViewTextBoxColumn
             {
@@ -272,7 +301,8 @@ namespace OwnORMForm
                 HeaderText = "Karakter",
                 ReadOnly = true,
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
-                FillWeight = 35
+                FillWeight = 35,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
             };
 
             GradesDataGridView.Columns.AddRange(colId, colStudent, colClassName, colCourse, colGrade);
@@ -415,41 +445,71 @@ namespace OwnORMForm
             ApplyGradesFilter();
         }
 
+        private string ToSearchText(object value)
+        {
+            if (value == null)
+                return string.Empty;
+
+            string text = value.ToString();
+            if (text == null)
+                return string.Empty;
+
+            return text.Trim().ToLowerInvariant();
+        }
+
         private void ApplyStudentFilter()
         {
-            string term = SearchStudentTextbox.Text == null ? string.Empty : SearchStudentTextbox.Text.Trim();
-            if (term.Length == 0)
+            string termRaw = SearchStudentTextbox.Text == null ? string.Empty : SearchStudentTextbox.Text.Trim();
+            if (termRaw.Length == 0)
             {
                 _studentsSource.DataSource = _allStudents;
                 return;
             }
 
-            string lower = term.ToLowerInvariant();
-            List<Student> filtered = _allStudents
-                .Where(s =>
-                    (s.StudentName != null && s.StudentName.ToLowerInvariant().Contains(lower)) ||
-                    (s.StudentAddress != null && s.StudentAddress.ToLowerInvariant().Contains(lower)) ||
-                    s.StudentID.ToString().Contains(term))
-                .ToList();
+            string term = termRaw.ToLowerInvariant();
+
+            List<Student> filtered = _allStudents.Where(s =>
+            {
+                Class cls = _allClasses.FirstOrDefault(c => c.ClassID == s.ClassID);
+                string className = cls != null ? cls.ClassName : string.Empty;
+
+                string avgText = "0.0";
+                if (s.StudentNumberOfCourses > 0)
+                {
+                    double average = (double)s.StudentSumOfAllCharacters / s.StudentNumberOfCourses;
+                    avgText = average.ToString("0.0");
+                }
+
+                bool match =
+                    ToSearchText(s.StudentID).Contains(term) ||
+                    ToSearchText(s.StudentName).Contains(term) ||
+                    ToSearchText(s.StudentAddress).Contains(term) ||
+                    ToSearchText(className).Contains(term) ||
+                    ToSearchText(s.StudentType).Contains(term) ||
+                    ToSearchText(s.StudentNumberOfCourses).Contains(term) ||
+                    ToSearchText(avgText).Contains(term);
+
+                return match;
+            }).ToList();
 
             _studentsSource.DataSource = filtered;
         }
 
         private void ApplyClassFilter()
         {
-            string term = SearchClassesTextBox.Text == null ? string.Empty : SearchClassesTextBox.Text.Trim();
-            if (term.Length == 0)
+            string termRaw = SearchClassesTextBox.Text == null ? string.Empty : SearchClassesTextBox.Text.Trim();
+            if (termRaw.Length == 0)
             {
                 _classesSource.DataSource = _allClasses;
                 return;
             }
 
-            string lower = term.ToLowerInvariant();
+            string term = termRaw.ToLowerInvariant();
             List<Class> filtered = _allClasses
                 .Where(c =>
-                    (c.ClassName != null && c.ClassName.ToLowerInvariant().Contains(lower)) ||
-                    (c.ClassDescription != null && c.ClassDescription.ToLowerInvariant().Contains(lower)) ||
-                    c.ClassID.ToString().Contains(term))
+                    ToSearchText(c.ClassID).Contains(term) ||
+                    ToSearchText(c.ClassName).Contains(term) ||
+                    ToSearchText(c.ClassDescription).Contains(term))
                 .ToList();
 
             _classesSource.DataSource = filtered;
@@ -457,18 +517,18 @@ namespace OwnORMForm
 
         private void ApplyCourseFilter()
         {
-            string term = SearchCourseTextbox.Text == null ? string.Empty : SearchCourseTextbox.Text.Trim();
-            if (term.Length == 0)
+            string termRaw = SearchCourseTextbox.Text == null ? string.Empty : SearchCourseTextbox.Text.Trim();
+            if (termRaw.Length == 0)
             {
                 _coursesSource.DataSource = _allCourses;
                 return;
             }
 
-            string lower = term.ToLowerInvariant();
+            string term = termRaw.ToLowerInvariant();
             List<Course> filtered = _allCourses
                 .Where(c =>
-                    (c.CourseName != null && c.CourseName.ToLowerInvariant().Contains(lower)) ||
-                    c.CourseID.ToString().Contains(term))
+                    ToSearchText(c.CourseID).Contains(term) ||
+                    ToSearchText(c.CourseName).Contains(term))
                 .ToList();
 
             _coursesSource.DataSource = filtered;
@@ -476,21 +536,34 @@ namespace OwnORMForm
 
         private void ApplyGradesFilter()
         {
-            string term = SearchGradesTextbox.Text == null ? string.Empty : SearchGradesTextbox.Text.Trim();
-            if (term.Length == 0)
+            string termRaw = SearchGradesTextbox.Text == null ? string.Empty : SearchGradesTextbox.Text.Trim();
+            if (termRaw.Length == 0)
             {
                 _gradesSource.DataSource = _currentGrades;
                 return;
             }
 
-            List<StudentClassRepetitionOnClass> filtered = _currentGrades
-                .Where(g =>
-                    g.StudentClassID.ToString().Contains(term) ||
-                    g.StudentID.ToString().Contains(term) ||
-                    g.ClassID.ToString().Contains(term) ||
-                    g.CourseID.ToString().Contains(term) ||
-                    g.Grade.ToString().Contains(term))
-                .ToList();
+            string term = termRaw.ToLowerInvariant();
+
+            List<StudentClassRepetitionOnClass> filtered = _currentGrades.Where(g =>
+            {
+                Class cls = _allClasses.FirstOrDefault(c => c.ClassID == g.ClassID);
+                string className = cls != null ? cls.ClassName : string.Empty;
+
+                Course crs = _allCourses.FirstOrDefault(c => c.CourseID == g.CourseID);
+                string courseName = crs != null ? crs.CourseName : string.Empty;
+
+                bool match =
+                    ToSearchText(g.StudentClassID).Contains(term) ||
+                    ToSearchText(g.StudentID).Contains(term) ||
+                    ToSearchText(g.ClassID).Contains(term) ||
+                    ToSearchText(className).Contains(term) ||
+                    ToSearchText(g.CourseID).Contains(term) ||
+                    ToSearchText(courseName).Contains(term) ||
+                    ToSearchText(g.Grade).Contains(term);
+
+                return match;
+            }).ToList();
 
             _gradesSource.DataSource = filtered;
         }
