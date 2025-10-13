@@ -1,0 +1,6 @@
+@ThirdWebApi_HostAddress = http://localhost:5115
+
+GET {{ThirdWebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
