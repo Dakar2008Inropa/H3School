@@ -16,7 +16,7 @@ namespace GUIWebAPI
             {
                 options.AddPolicy("ReactClient", policy => 
                 {
-                    policy.WithOrigins("http://localhost:5295")
+                    policy.WithOrigins("http://localhost:63154")
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });
@@ -28,11 +28,8 @@ namespace GUIWebAPI
 
             var app = builder.Build();
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseHttpsRedirection();
 

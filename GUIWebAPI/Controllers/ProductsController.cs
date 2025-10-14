@@ -1,5 +1,5 @@
 ﻿using GUIWebAPI.Models;
-using Microsoft.AspNetCore.Http;
+using GUIWebAPI.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +17,7 @@ namespace GUIWebAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetAll([FromQuery] int? categoryId = null, [FromQuery] string q = null)
+        public async Task<ActionResult<IEnumerable<ProductReadDto>>> GetAll([FromQuery] int? categoryId = null, [FromQuery] string q = null)
         {
             IQueryable<Product> query = _db.Products
                 .AsNoTracking()
@@ -39,11 +39,22 @@ namespace GUIWebAPI.Controllers
                 .ThenBy(p => p.ProductId)
                 .ToListAsync();
 
-            return Ok(items);
+            List<ProductReadDto> result = items
+                .Select(p => new ProductReadDto
+                {
+                    ProductId = p.ProductId,
+                    Name = p.Name,
+                    Price = p.Price,
+                    CategoryId = p.CategoryId,
+                    CategoryName = p.Category?.Name
+                })
+                .ToList();
+
+            return Ok(result);
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<Product>> GetById(int id)
+        public async Task<ActionResult<ProductReadDto>> GetById(int id)
         {
             Product product = await _db.Products
                 .AsNoTracking()
@@ -52,13 +63,22 @@ namespace GUIWebAPI.Controllers
 
             if (product == null) return NotFound();
 
-            return Ok(product);
+            ProductReadDto dto = new ProductReadDto 
+            {
+                ProductId = product.ProductId,
+                Name = product.Name,
+                Price = product.Price,
+                CategoryId = product.CategoryId,
+                CategoryName = product.Category?.Name
+            };
+
+            return Ok(dto);
         }
 
         [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<Product>>> Search([FromQuery] string q, [FromQuery] int? categoryId = null)
+        public async Task<ActionResult<IEnumerable<ProductReadDto>>> Search([FromQuery] string q, [FromQuery] int? categoryId = null)
         {
-            if (string.IsNullOrWhiteSpace(q)) return Ok(Array.Empty<Product>());
+            if (string.IsNullOrWhiteSpace(q)) return Ok(Array.Empty<ProductReadDto>());
             string term = q.Trim();
 
             IQueryable<Product> query = _db.Products
@@ -76,11 +96,20 @@ namespace GUIWebAPI.Controllers
                 .ThenBy(p => p.ProductId)
                 .ToListAsync();
 
-            return Ok(items);
+            List<ProductReadDto> result = items.Select(p => new ProductReadDto
+            {
+                ProductId = p.ProductId,
+                Name = p.Name,
+                Price = p.Price,
+                CategoryId = p.CategoryId,
+                CategoryName = p.Category?.Name
+            }).ToList();
+
+            return Ok(result);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Product>> Create([FromBody] Product input)
+        public async Task<ActionResult<ProductReadDto>> Create([FromBody] ProductCreateDto input)
         {
             if (input == null) return BadRequest();
 
@@ -102,7 +131,16 @@ namespace GUIWebAPI.Controllers
 
             await _db.Entry(entity).Reference(p => p.Category).LoadAsync();
 
-            return CreatedAtAction(nameof(GetById), new { id = entity.ProductId }, entity);
+            ProductReadDto dto = new ProductReadDto
+            {
+                ProductId = entity.ProductId,
+                Name = entity.Name,
+                Price = entity.Price,
+                CategoryId = entity.CategoryId,
+                CategoryName = entity.Category?.Name
+            };
+
+            return CreatedAtAction(nameof(GetById), new { id = entity.ProductId }, dto);
         }
 
         [HttpPut("{id:int}")]
