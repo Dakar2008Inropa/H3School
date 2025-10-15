@@ -1,0 +1,6 @@
+@GudumholmIF_HostAddress = http://localhost:5105
+
+GET {{GudumholmIF_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
