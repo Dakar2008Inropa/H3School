@@ -6,7 +6,11 @@
         public string Name { get; set; }
 
         public decimal Price { get; set; }
+
         public int CategoryId { get; set; }
         public Category Category { get; set; }
+
+        public int? ImageFileId { get; set; }
+        public ImageFile ImageFile { get; set; }
     }
 }

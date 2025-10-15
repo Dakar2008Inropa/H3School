@@ -9,17 +9,17 @@ namespace GUIWebAPI.Controllers
     [ApiController]
     public class CategoriesController : ControllerBase
     {
-        private readonly DBContext _db;
+        private readonly DBContext db;
 
         public CategoriesController(DBContext db)
         {
-            _db = db;
+            this.db = db;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Category>>> GetAll([FromQuery] bool includeProducts = false, [FromQuery] string q = null)
         {
-            IQueryable<Category> query = _db.Categories.AsNoTracking();
+            IQueryable<Category> query = db.Categories.AsNoTracking();
 
             if (includeProducts)
                 query = query.Include(c => c.Products);
@@ -61,7 +61,7 @@ namespace GUIWebAPI.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<object>> GetById(int id, [FromQuery] bool includeProducts = false)
         {
-            IQueryable<Category> query = _db.Categories.AsNoTracking();
+            IQueryable<Category> query = db.Categories.AsNoTracking();
             if (includeProducts)
             {
                 query = query.Include(c => c.Products);
@@ -101,13 +101,13 @@ namespace GUIWebAPI.Controllers
             if (string.IsNullOrWhiteSpace(q)) return Ok(Array.Empty<CategoryReadDto>());
             string term = q.Trim();
 
-            List<Category> items = await _db.Categories
+            List<Category> items = await db.Categories
                 .AsNoTracking()
                 .Where(c => EF.Functions.Like(c.Name, "%" + term + "%"))
                 .OrderBy(c => c.Name)
                 .ToListAsync();
 
-            List<CategoryReadDto> result = items.Select(c => new CategoryReadDto 
+            List<CategoryReadDto> result = items.Select(c => new CategoryReadDto
             {
                 CategoryId = c.CategoryId,
                 Name = c.Name
@@ -126,10 +126,10 @@ namespace GUIWebAPI.Controllers
                 Name = input.Name?.Trim() ?? string.Empty
             };
 
-            await _db.Categories.AddAsync(entity);
-            await _db.SaveChangesAsync();
+            await db.Categories.AddAsync(entity);
+            await db.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetById), new { id = entity.CategoryId }, new CategoryReadDto 
+            return CreatedAtAction(nameof(GetById), new { id = entity.CategoryId }, new CategoryReadDto
             {
                 CategoryId = entity.CategoryId,
                 Name = entity.Name
@@ -141,23 +141,23 @@ namespace GUIWebAPI.Controllers
         {
             if (input == null || id != input.CategoryId) return BadRequest();
 
-            Category current = await _db.Categories.FirstOrDefaultAsync(c => c.CategoryId == id);
+            Category current = await db.Categories.FirstOrDefaultAsync(c => c.CategoryId == id);
             if (current == null) return NotFound();
 
             current.Name = input.Name?.Trim() ?? string.Empty;
 
-            await _db.SaveChangesAsync();
+            await db.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            Category current = await _db.Categories.FirstOrDefaultAsync(c => c.CategoryId == id);
+            Category current = await db.Categories.FirstOrDefaultAsync(c => c.CategoryId == id);
             if (current == null) return NotFound();
 
-            _db.Categories.Remove(current);
-            await _db.SaveChangesAsync();
+            db.Categories.Remove(current);
+            await db.SaveChangesAsync();
             return NoContent();
         }
     }

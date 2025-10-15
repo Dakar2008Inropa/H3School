@@ -1,25 +1,26 @@
 ﻿using GUIWebAPI.Models;
 using GUIWebAPI.Models.DTOs;
+using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace GUIWebAPI.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class ProductsController : ControllerBase
     {
-        private readonly DBContext _db;
+        private readonly DBContext db;
 
         public ProductsController(DBContext db)
         {
-            _db = db;
+            this.db = db;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductReadDto>>> GetAll([FromQuery] int? categoryId = null, [FromQuery] string q = null)
         {
-            IQueryable<Product> query = _db.Products
+            IQueryable<Product> query = db.Products
                 .AsNoTracking()
                 .Include(p => p.Category);
 
@@ -34,21 +35,12 @@ namespace GUIWebAPI.Controllers
                 query = query.Where(p => EF.Functions.Like(p.Name, "%" + term + "%"));
             }
 
-            List<Product> items = await query
-                .OrderBy(p => p.Name)
-                .ThenBy(p => p.ProductId)
-                .ToListAsync();
+            List<ProductReadDto> result = await query.OrderBy(p => p.Name).ThenBy(p => p.ProductId).ProjectToType<ProductReadDto>().ToListAsync();
 
-            List<ProductReadDto> result = items
-                .Select(p => new ProductReadDto
-                {
-                    ProductId = p.ProductId,
-                    Name = p.Name,
-                    Price = p.Price,
-                    CategoryId = p.CategoryId,
-                    CategoryName = p.Category?.Name
-                })
-                .ToList();
+            foreach (ProductReadDto dto in result)
+            {
+                dto.ImageUrl = MakeAbsoluteUrl(dto.ImageUrl);
+            }
 
             return Ok(result);
         }
@@ -56,21 +48,15 @@ namespace GUIWebAPI.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ProductReadDto>> GetById(int id)
         {
-            Product product = await _db.Products
+            Product product = await db.Products
                 .AsNoTracking()
                 .Include(p => p.Category)
                 .FirstOrDefaultAsync(p => p.ProductId == id);
 
             if (product == null) return NotFound();
 
-            ProductReadDto dto = new ProductReadDto 
-            {
-                ProductId = product.ProductId,
-                Name = product.Name,
-                Price = product.Price,
-                CategoryId = product.CategoryId,
-                CategoryName = product.Category?.Name
-            };
+            ProductReadDto dto = product.Adapt<ProductReadDto>();
+            dto.ImageUrl = MakeAbsoluteUrl(dto.ImageUrl);
 
             return Ok(dto);
         }
@@ -81,7 +67,7 @@ namespace GUIWebAPI.Controllers
             if (string.IsNullOrWhiteSpace(q)) return Ok(Array.Empty<ProductReadDto>());
             string term = q.Trim();
 
-            IQueryable<Product> query = _db.Products
+            IQueryable<Product> query = db.Products
                 .AsNoTracking()
                 .Include(p => p.Category)
                 .Where(p => EF.Functions.Like(p.Name, "%" + term + "%"));
@@ -91,19 +77,12 @@ namespace GUIWebAPI.Controllers
                 query = query.Where(p => p.CategoryId == categoryId.Value);
             }
 
-            List<Product> items = await query
-                .OrderBy(p => p.Name)
-                .ThenBy(p => p.ProductId)
-                .ToListAsync();
+            List<ProductReadDto> result = await query.OrderBy(p => p.Name).ThenBy(p => p.ProductId).ProjectToType<ProductReadDto>().ToListAsync();
 
-            List<ProductReadDto> result = items.Select(p => new ProductReadDto
+            foreach (ProductReadDto dto in result)
             {
-                ProductId = p.ProductId,
-                Name = p.Name,
-                Price = p.Price,
-                CategoryId = p.CategoryId,
-                CategoryName = p.Category?.Name
-            }).ToList();
+                dto.ImageUrl = MakeAbsoluteUrl(dto.ImageUrl);
+            }
 
             return Ok(result);
         }
@@ -113,32 +92,28 @@ namespace GUIWebAPI.Controllers
         {
             if (input == null) return BadRequest();
 
-            bool categoryExists = await _db.Categories.AnyAsync(c => c.CategoryId == input.CategoryId);
+            bool categoryExists = await db.Categories.AnyAsync(c => c.CategoryId == input.CategoryId);
             if (!categoryExists)
             {
                 return BadRequest(new { message = "Invalid CategoryId." });
             }
 
-            Product entity = new Product
+            if (input.ImageFileId.HasValue)
             {
-                Name = input.Name?.Trim() ?? string.Empty,
-                Price = input.Price,
-                CategoryId = input.CategoryId
-            };
+                bool imageExists = await db.ImageFiles.AnyAsync(i => i.ImageFileId == input.ImageFileId.Value);
+                if (!imageExists) return BadRequest(new { message = "Invalid ImageFileId." });
+            }
 
-            await _db.Products.AddAsync(entity);
-            await _db.SaveChangesAsync();
+            Product entity = input.Adapt<Product>();
 
-            await _db.Entry(entity).Reference(p => p.Category).LoadAsync();
+            await db.Products.AddAsync(entity);
+            await db.SaveChangesAsync();
 
-            ProductReadDto dto = new ProductReadDto
-            {
-                ProductId = entity.ProductId,
-                Name = entity.Name,
-                Price = entity.Price,
-                CategoryId = entity.CategoryId,
-                CategoryName = entity.Category?.Name
-            };
+            await db.Entry(entity).Reference(p => p.Category).LoadAsync();
+            await db.Entry(entity).Reference(p => p.ImageFile).LoadAsync();
+
+            ProductReadDto dto = entity.Adapt<ProductReadDto>();
+            dto.ImageUrl = MakeAbsoluteUrl(dto.ImageUrl);
 
             return CreatedAtAction(nameof(GetById), new { id = entity.ProductId }, dto);
         }
@@ -148,35 +123,55 @@ namespace GUIWebAPI.Controllers
         {
             if (input == null || id != input.ProductId) return BadRequest();
 
-            Product current = await _db.Products.FirstOrDefaultAsync(p => p.ProductId == id);
+            Product current = await db.Products.FirstOrDefaultAsync(p => p.ProductId == id);
             if (current == null) return NotFound();
 
             if (current.CategoryId != input.CategoryId)
             {
-                bool categoryExists = await _db.Categories.AnyAsync(c => c.CategoryId == input.CategoryId);
+                bool categoryExists = await db.Categories.AnyAsync(c => c.CategoryId == input.CategoryId);
                 if (!categoryExists)
                 {
                     return BadRequest(new { message = "Invalid CategoryId." });
                 }
             }
 
+            if (current.ImageFileId != input.ImageFileId)
+            {
+                if (input.ImageFileId.HasValue)
+                {
+                    bool imageExists = await db.ImageFiles.AnyAsync(i => i.ImageFileId == input.ImageFileId.Value);
+                    if (!imageExists) return BadRequest(new { message = "Invalid ImageFileId." });
+                }
+            }
+
             current.Name = input.Name?.Trim() ?? string.Empty;
             current.Price = input.Price;
             current.CategoryId = input.CategoryId;
+            current.ImageFileId = input.ImageFileId;
 
-            await _db.SaveChangesAsync();
+            await db.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            Product current = await _db.Products.FirstOrDefaultAsync(p => p.ProductId == id);
+            Product current = await db.Products.FirstOrDefaultAsync(p => p.ProductId == id);
             if (current == null) return NotFound();
 
-            _db.Products.Remove(current);
-            await _db.SaveChangesAsync();
+            db.Products.Remove(current);
+            await db.SaveChangesAsync();
             return NoContent();
+        }
+
+        private string MakeAbsoluteUrl(string virtualOrRelativePath)
+        {
+            if (string.IsNullOrWhiteSpace(virtualOrRelativePath)) return string.Empty;
+            if (virtualOrRelativePath.StartsWith("http", StringComparison.OrdinalIgnoreCase)) return virtualOrRelativePath;
+
+            string baseUrl = string.Concat(Request.Scheme, "://", Request.Host.ToUriComponent());
+            string path = virtualOrRelativePath.StartsWith('/') ? virtualOrRelativePath : '/' + virtualOrRelativePath;
+            return baseUrl + path;
         }
     }
 }

@@ -15,7 +15,24 @@ export const ProductsApi = {
         http.get(`/api/Products/search${qs({ q, categoryId })}`, { signal }),
 
     get: (id, signal) => http.get(`/api/Products/${id}`, { signal }),
+
     create: (data) => http.post("/api/Products", data),
+
     update: (id, data) => http.put(`/api/Products/${id}`, data),
+
     remove: (id) => http.del(`/api/Products/${id}`),
+};
+
+export const ImageFilesApi = {
+    list: (signal) => http.get("/api/ImageFiles", { signal }),
+
+    upload: (files, signal) => {
+        const form = new FormData();
+        for (const f of files) {
+            form.append("files", f);
+        }
+        return http.postForm("/api/ImageFiles/upload", form, { signal });
+    },
+
+    refresh: (signal) => http.post("/api/ImageFiles/refresh", {}, { signal }),
 };

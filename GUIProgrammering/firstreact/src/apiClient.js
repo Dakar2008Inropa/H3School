@@ -1,16 +1,20 @@
 const BASE_URL = import.meta.env.VITE_API_URL || "https://localhost:7032";
 
 async function request(path, { method = "GET", body, signal } = {}) {
+    const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+
     let response;
     try {
         response = await fetch(BASE_URL + path, {
             method,
-            headers: { "Content-Type": "application/json" },
-            body: body ? JSON.stringify(body) : undefined,
+            headers: isFormData
+                ? { Accept: "application/json" }
+                : { "Content-Type": "application/json", Accept: "application/json" },
+            body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
             signal,
         });
     } catch (networkError) {
-        const err = new Error("Kunne ikke forbinde til API’et. Kontroller at serveren kører.");
+        const err = new Error("Could not connect to the API. Ensure the server is running.");
         err.status = 0;
         err.details = [networkError.message];
         throw err;
@@ -47,7 +51,7 @@ async function request(path, { method = "GET", body, signal } = {}) {
                 if (text) message += ` — ${text.slice(0, 400)}`;
             }
         } catch (parseError) {
-            message += " — Kunne ikke fortolke fejlbesked fra serveren.";
+            message += " — Failed to parse error response from server.";
             details.push(parseError.message);
         }
 
@@ -61,7 +65,7 @@ async function request(path, { method = "GET", body, signal } = {}) {
         try {
             return await response.json();
         } catch (jsonError) {
-            const err = new Error("Ugyldigt JSON-svar fra serveren.");
+            const err = new Error("Invalid JSON response from server.");
             err.status = response.status;
             err.details = [jsonError.message];
             throw err;
@@ -76,4 +80,5 @@ export const http = {
     post: (path, body, opts) => request(path, { ...opts, method: "POST", body }),
     put: (path, body, opts) => request(path, { ...opts, method: "PUT", body }),
     del: (path, opts) => request(path, { ...opts, method: "DELETE" }),
+    postForm: (path, formData, opts) => request(path, { ...opts, method: "POST", body: formData }),
 };
