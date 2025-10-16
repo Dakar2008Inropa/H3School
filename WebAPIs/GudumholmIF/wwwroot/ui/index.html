@@ -1,0 +1,125 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Gudumholm IF — Dashboard</title>
+
+    <link rel="stylesheet" href="/ui/css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="/ui/css/styles.css" />
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+            integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+            crossorigin="anonymous"></script>
+</head>
+
+<body class="d-flex flex-column min-vh-100 bg-dark-subtle text-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-secondary">
+        <div class="container">
+            <a class="navbar-brand fw-semibold" href="/ui/index.html">Gudumholm IF — Admin UI</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNav"
+                    aria-controls="topNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div id="topNav" class="navbar-collapse collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="/ui/index.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ui/persons.html">Persons</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ui/households.html">Households</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ui/sports.html">Sports</a></li>
+                    <li class="nav-item dropdown">
+                        <button class="nav-link dropdown-toggle btn btn-link text-decoration-none px-0"
+                                id="apiDropdown" data-bs-toggle="dropdown" aria-expanded="false" type="button">
+                            API docs
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="apiDropdown">
+                            <li><a class="dropdown-item" href="/swagger" target="_blank">Open Swagger</a></li>
+                            <li><a class="dropdown-item" href="/openapi/v1.json" target="_blank">OpenAPI JSON</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow-1 container py-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h1 class="h4 mb-0">Dashboard</h1>
+            <button id="reloadDashboard" class="btn btn-outline-light">Reload</button>
+        </div>
+
+        <div id="dashError" class="alert alert-danger d-none" role="alert"></div>
+
+        <div class="row g-3">
+            <div class="col-md-6 col-xl-3">
+                <div class="card bg-dark border-secondary text-light h-100">
+                    <div class="card-body">
+                        <div class="fw-semibold text-uppercase small">Total members</div>
+                        <div id="totalMembers" class="display-6 stat-number mt-1">—</div>
+                        <div class="text-secondary small">All persons</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+                <div class="card bg-dark border-secondary text-light h-100">
+                    <div class="card-body">
+                        <div class="fw-semibold text-uppercase small">Active members</div>
+                        <div id="activeMembers" class="display-6 stat-number mt-1">—</div>
+                        <div class="text-secondary small">MembershipState = Active</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+                <div class="card bg-dark border-secondary text-light h-100">
+                    <div class="card-body">
+                        <div class="fw-semibold text-uppercase small">Total households</div>
+                        <div id="totalHouseholds" class="display-6 stat-number mt-1">—</div>
+                        <div class="text-secondary small">All households</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+                <div class="card bg-dark border-secondary text-light h-100">
+                    <div class="card-body">
+                        <div class="fw-semibold text-uppercase small">Total sports</div>
+                        <div id="totalSports" class="display-6 stat-number mt-1">—</div>
+                        <div class="text-secondary small">All sports</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+                <div class="card bg-dark border-secondary text-light h-100">
+                    <div class="card-body">
+                        <div class="fw-semibold text-uppercase small">Active sports</div>
+                        <div id="activeSports" class="display-6 stat-number mt-1">—</div>
+                        <div class="text-secondary small">IsActive = true</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-xl-6">
+                <div class="card bg-dark border-secondary text-light h-100">
+                    <div class="card-body">
+                        <div class="fw-semibold text-uppercase small">Annual income (fees)</div>
+                        <div id="annualIncome" class="display-5 stat-number mt-1">—</div>
+                        <div class="text-secondary small">Sum of active members’ sports fees (per year)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-dark border-top border-secondary text-light mt-auto py-3">
+        <div class="container">
+            <small>Gudumholm IF — Demo UI. Use responsibly in development.</small>
+        </div>
+    </footer>
+
+    <script src="/ui/js/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="/ui/js/dashboard.js"></script>
+</body>
+</html>

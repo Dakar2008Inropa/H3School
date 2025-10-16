@@ -7,6 +7,6 @@
         public string City { get; set; }
         public string PostalCode { get; set; }
 
-        public ICollection<Person> Members { get; set; }
+        public ICollection<Person> Members { get; set; } = new List<Person>();
     }
 }

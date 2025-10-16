@@ -20,9 +20,9 @@ namespace GUIWebAPI
 
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("ReactClient", policy =>
+                options.AddPolicy("SpaClients", policy =>
                 {
-                    policy.WithOrigins("http://localhost:63154")
+                    policy.WithOrigins("http://localhost:63154", "http://localhost:57736")
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });
@@ -61,7 +61,7 @@ namespace GUIWebAPI
 
             app.UseHttpsRedirection();
 
-            app.UseCors("ReactClient");
+            app.UseCors("SpaClients");
 
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
