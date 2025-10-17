@@ -22,9 +22,10 @@ namespace GUIWebAPI
             {
                 options.AddPolicy("ReactClient", policy =>
                 {
-                    policy.WithOrigins("http://localhost:63154")
-                          .AllowAnyHeader()
-                          .AllowAnyMethod();
+                    policy.SetIsOriginAllowed((host) => true)
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
                 });
             });
 
