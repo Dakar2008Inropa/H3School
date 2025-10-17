@@ -12,9 +12,9 @@
 
         public MembershipState State { get; set; }
 
-        public ParentRole? ParentRole { get; set; }
-        public ICollection<BoardRole> BoardRoles { get; set; }
+        public ParentRole ParentRole { get; set; }
+        public ICollection<BoardRole> BoardRoles { get; set; } = new List<BoardRole>();
 
-        public ICollection<PersonSport> Sports { get; set; }
+        public ICollection<PersonSport> Sports { get; set; } = new List<PersonSport>();
     }
 }

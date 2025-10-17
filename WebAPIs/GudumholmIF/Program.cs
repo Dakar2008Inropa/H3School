@@ -50,6 +50,11 @@ namespace GudumholmIF
             }
 
             app.UseHttpsRedirection();
+
+            app.UseDefaultFiles(new DefaultFilesOptions { RequestPath = "/ui" });
+
+            app.UseStaticFiles();
+
             app.MapControllers();
 
             app.Run();

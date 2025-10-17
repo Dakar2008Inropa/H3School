@@ -12,7 +12,7 @@ namespace GudumholmIF.Mapping
         public static void Register(TypeAdapterConfig config)
         {
             config.NewConfig<Household, HouseholdDto>()
-                .Map(d => d.MemberCount, s => s.Members.Count);
+                .Map(d => d.MemberCount, s => s.Members != null ? s.Members.Count : 0);
 
             config.NewConfig<HouseholdCreateDto, Household>();
 
@@ -20,7 +20,8 @@ namespace GudumholmIF.Mapping
 
             config.NewConfig<Person, PersonDto>()
                 .Map(d => d.MembershipState, s => s.State.State.ToString())
-                .Map(d => d.ActiveChildrenCount, s => s.ParentRole != null ? s.ParentRole.ActiveChildrenCount : 0);
+                .Map(d => d.ActiveChildrenCount, s => s.ParentRole != null ? s.ParentRole.ActiveChildrenCount : 0)
+                .Map(d => d.HasParentRole, s => s.ParentRole != null);
 
             config.NewConfig<PersonCreateDto, Person>()
                 .Ignore(d => d.Id)

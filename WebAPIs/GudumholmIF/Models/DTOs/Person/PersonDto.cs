@@ -10,5 +10,7 @@
         public int HouseholdId { get; set; }
         public string MembershipState { get; set; }
         public int ActiveChildrenCount { get; set; }
+
+        public bool HasParentRole { get; set; }
     }
 }

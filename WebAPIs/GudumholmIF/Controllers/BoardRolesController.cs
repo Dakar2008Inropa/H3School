@@ -33,6 +33,17 @@ namespace GudumholmIF.Controllers
             return Ok(role.Adapt<BoardRoleDto>());
         }
 
+        [HttpGet("by-person/{personId:int}")]
+        public async Task<ActionResult<IEnumerable<BoardRoleDto>>> ByPerson(int personId, CancellationToken ct)
+        {
+            bool exists = await db.Persons.AnyAsync(x => x.Id == personId, ct);
+            if (!exists) return NotFound("Person not found.");
+
+            List<BoardRole> roles = await db.BoardRoles.Where(r => r.PersonId == personId).AsNoTracking().ToListAsync(ct);
+
+            return Ok(roles.Adapt<List<BoardRoleDto>>());
+        }
+
         [HttpPost]
         public async Task<ActionResult<BoardRoleDto>> Create([FromBody] BoardRoleCreateDto dto, CancellationToken ct)
         {

@@ -30,14 +30,14 @@ namespace GudumholmIF.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<HouseholdDto>> Get(int id, CancellationToken ct)
         {
-            Household? entity = await db.HouseHolds.Include(h => h.Members).SingleOrDefaultAsync(h => h.Id == id, ct);
+            Household entity = await db.HouseHolds.Include(h => h.Members).SingleOrDefaultAsync(h => h.Id == id, ct);
             if (entity == null) return NotFound();
             HouseholdDto dto = entity.Adapt<HouseholdDto>();
             return Ok(dto);
         }
 
         [HttpPost]
-        public async Task<ActionResult<HouseholdDto>> Create(HouseholdCreateDto dto, CancellationToken ct)
+        public async Task<ActionResult<HouseholdDto>> Create([FromBody] HouseholdCreateDto dto, CancellationToken ct)
         {
             Household entity = dto.Adapt<Household>();
             db.HouseHolds.Add(entity);
