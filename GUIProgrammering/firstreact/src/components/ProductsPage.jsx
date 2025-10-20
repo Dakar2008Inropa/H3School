@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ProductsApi, ImageFilesApi } from "../productsApi";
 import { CategoriesApi } from "../categoriesApi";
 
@@ -51,6 +51,23 @@ export default function ProductsPage() {
     const [editModel, setEditModel] = useState(null);
 
     const [previewUrl, setPreviewUrl] = useState("");
+
+    const createFileInputRef = useRef(null);
+    const editFileInputRef = useRef(null);
+
+    const [editMenuOpen, setEditMenuOpen] = useState(false);
+    const editMenuRef = useRef(null);
+
+    useEffect(() => {
+        function handleDocClick(e) {
+            if (!editMenuOpen) return;
+            if (editMenuRef.current && !editMenuRef.current.contains(e.target)) {
+                setEditMenuOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleDocClick);
+        return () => document.removeEventListener("mousedown", handleDocClick);
+    }, [editMenuOpen]);
 
     async function loadProducts() {
         try {
@@ -228,6 +245,7 @@ export default function ProductsPage() {
     function cancelEdit() {
         setEditId(null);
         setEditModel(null);
+        setEditMenuOpen(false);
     }
 
     async function saveEdit() {
@@ -261,6 +279,7 @@ export default function ProductsPage() {
             setFormError({ message: e.message || "Opdatering fejlede.", details: e.details || [] });
         } finally {
             setSaving(false);
+            setEditMenuOpen(false);
         }
     }
 
@@ -393,10 +412,18 @@ export default function ProductsPage() {
                             </select>
                             { }
                             <input
+                                ref={createFileInputRef}
                                 type="file"
                                 accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.svg"
                                 onChange={(e) => handleCreateUpload(e.target.files)}
+                                style={{ display: "none" }}
                             />
+                            <button
+                                type="button"
+                                onClick={() => createFileInputRef.current?.click()}
+                            >
+                                Upload Image
+                            </button>
                         </div>
                     </div>
 
@@ -458,15 +485,61 @@ export default function ProductsPage() {
                                                 ))}
                                             </select>
                                             <input
+                                                ref={editFileInputRef}
                                                 type="file"
                                                 accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.svg"
                                                 onChange={(e) => handleEditUpload(e.target.files)}
+                                                style={{ display: "none" }}
                                             />
                                         </div>
                                     </td>
-                                    <td style={{ display: "flex", gap: 8, paddingBottom: "6px", paddingTop: "6px", justifyContent: "center" }}>
-                                        <button onClick={saveEdit} disabled={saving}>{saving ? "Gemmer…" : "Gem"}</button>
-                                        <button onClick={cancelEdit} disabled={saving}>Annuller</button>
+                                    <td style={{ paddingBottom: "6px", paddingTop: "6px", textAlign: "center" }}>
+                                        <div ref={editMenuRef} style={{ position: "relative", display: "inline-block" }}>
+                                            <button
+                                                type="button"
+                                                onClick={() => setEditMenuOpen(o => !o)}
+                                                disabled={saving}
+                                            >
+                                                Handlinger
+                                            </button>
+                                            {editMenuOpen && (
+                                                <div style={menuStyle}>
+                                                    <button
+                                                        type="button"
+                                                        style={menuItemStyle}
+                                                        onClick={() => {
+                                                            setEditMenuOpen(false);
+                                                            editFileInputRef.current?.click();
+                                                        }}
+                                                    >
+                                                        Upload Billede
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        style={menuItemStyle}
+                                                        onClick={() => {
+                                                            setEditMenuOpen(false);
+                                                            saveEdit();
+                                                        }}
+                                                        disabled={saving}
+                                                    >
+                                                        Gem
+                                                    </button>
+                                                    <div style={menuSeparatorStyle} />
+                                                    <button
+                                                        type="button"
+                                                        style={menuItemStyle}
+                                                        onClick={() => {
+                                                            setEditMenuOpen(false);
+                                                            cancelEdit();
+                                                        }}
+                                                        disabled={saving}
+                                                    >
+                                                        Annuller
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             );
@@ -478,7 +551,13 @@ export default function ProductsPage() {
                                 <td style={cellTextCenter}>{formatCurrency(p.price)}</td>
                                 <td style={{ ...cellTextCenter, paddingTop: 6, paddingBottom: 6 }}>
                                     {p.imageUrl
-                                        ? <img src={p.imageUrl} alt={p.name} style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 4 }} />
+                                        ? <img
+                                            src={p.imageUrl}
+                                            alt={p.name}
+                                            style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 4, cursor: "pointer" }}
+                                            onClick={() => showImage(p.imageUrl)}
+                                            title="Click to preview"
+                                        />
                                         : <span style={{ color: "#999" }}>(intet)</span>
                                     }
                                 </td>
@@ -486,7 +565,6 @@ export default function ProductsPage() {
                                     { }
                                     <button onClick={() => startEdit(p)}>Rediger</button>
                                     <button className="deleteBtn" onClick={() => deleteProduct(p.id)}>Slet</button>
-                                    <button onClick={() => showImage(p.imageUrl)}>Vis Billede</button>
                                 </td>
                             </tr>
                         );
@@ -537,4 +615,31 @@ const modalContentStyle = {
     padding: 16,
     borderRadius: 6,
     boxShadow: "0 6px 24px rgba(0,0,0,0.4)"
+};
+
+const menuStyle = {
+    position: "absolute",
+    right: 0,
+    top: "100%",
+    background: "#333",
+    border: "1px solid #ddd",
+    borderRadius: 6,
+    minWidth: 160,
+    padding: 4,
+    boxShadow: "0 6px 24px rgba(0,0,0,0.15)",
+    zIndex: 10
+};
+const menuItemStyle = {
+    display: "block",
+    width: "100%",
+    textAlign: "left",
+    background: "transparent",
+    border: "none",
+    padding: "8px 10px",
+    cursor: "pointer"
+};
+const menuSeparatorStyle = {
+    height: 1,
+    background: "#eee",
+    margin: "4px 0"
 };
