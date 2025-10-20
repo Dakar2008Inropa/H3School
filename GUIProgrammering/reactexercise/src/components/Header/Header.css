@@ -17,6 +17,8 @@
     height: var(--header-height);
     z-index: 1000;
     display: flex;
+    cursor: default;
+    user-select: none;
     align-items: center;
     justify-content: center;
     gap: 12px;
