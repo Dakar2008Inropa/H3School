@@ -44,6 +44,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GudumholmIF", "WebAPIs\Gudu
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "firstvue", "GUIProgrammering\firstvue\firstvue.esproj", "{C928F5B2-4326-4A28-CD07-4D08747BFF39}"
 EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "reactexercise", "GUIProgrammering\ReactExercise\reactexercise.esproj", "{74908196-F816-E996-BF35-43B6789666FF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -94,6 +96,12 @@ Global
 		{C928F5B2-4326-4A28-CD07-4D08747BFF39}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C928F5B2-4326-4A28-CD07-4D08747BFF39}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C928F5B2-4326-4A28-CD07-4D08747BFF39}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{74908196-F816-E996-BF35-43B6789666FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74908196-F816-E996-BF35-43B6789666FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74908196-F816-E996-BF35-43B6789666FF}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{74908196-F816-E996-BF35-43B6789666FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74908196-F816-E996-BF35-43B6789666FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74908196-F816-E996-BF35-43B6789666FF}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -114,6 +122,7 @@ Global
 		{EDD0B792-EBC2-4DA5-9856-5E8C8212DC4E} = {8D3DB13A-3925-4582-990F-B0CDDDACDBEA}
 		{AD9FA3F6-24DB-4182-ACA2-87B93523A987} = {EDD0B792-EBC2-4DA5-9856-5E8C8212DC4E}
 		{C928F5B2-4326-4A28-CD07-4D08747BFF39} = {3C4B02AA-03F7-48AC-A24C-6DE90B663F2A}
+		{74908196-F816-E996-BF35-43B6789666FF} = {3C4B02AA-03F7-48AC-A24C-6DE90B663F2A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {72683C36-8E0C-49E2-AA69-0D580BCF4475}
