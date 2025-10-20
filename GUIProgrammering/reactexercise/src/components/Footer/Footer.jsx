@@ -45,7 +45,7 @@ function calculateAge(birthDate) {
     return age;
 }
 
-const Footer = ({ birth = '010195' }) => {
+export const Footer = ({ birth = '010195' }) => {
     const birthDate = parseBirthDDMMYY(birth);
     const age = birthDate ? calculateAge(birthDate) : null;
 
@@ -53,7 +53,7 @@ const Footer = ({ birth = '010195' }) => {
         <>
             <footer className="footer-container" role="contentinfo" aria-label="Site footer">
                 <p className="footer-text">
-                    {age !== null ? `Age: ${age}` : 'Invalid birthdate'}
+                    {age !== null ? `${age} år` : 'Invalid birthdate'}
                 </p>
             </footer>
             <div className="footer-spacer" />
@@ -64,5 +64,3 @@ const Footer = ({ birth = '010195' }) => {
 Footer.propTypes = {
     birth: PropTypes.string,
 };
-
-export default Footer;

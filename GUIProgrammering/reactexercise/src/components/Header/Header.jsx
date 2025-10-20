@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import './Header.css';
 
-const Header = ({ name = 'Your Name' }) => {
+export const Header = ({ name = 'Your Name' }) => {
     return (
         <>
             <header className="header-container" role="banner" aria-label="Site header">
@@ -17,5 +17,3 @@ const Header = ({ name = 'Your Name' }) => {
 Header.propTypes = {
     name: PropTypes.string
 };
-
-export default Header;
