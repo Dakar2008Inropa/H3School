@@ -10,3 +10,17 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+
+html, body, #root {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+main {
+    box-sizing: border-box;
+}

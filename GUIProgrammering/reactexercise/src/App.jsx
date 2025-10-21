@@ -2,8 +2,6 @@ import { Header } from "./components/Header/Header";
 import { InfoCard } from "./components/InfoCard/InfoCard";
 import { Footer } from "./components/Footer/Footer";
 
-import myPhoto from './assets/me.jpg';
-
 function App() {
     return (
         <>
@@ -13,11 +11,12 @@ function App() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                minHeight: 'calc(100vh - var(--header-height, 72px) - var(--footer-height, 56px))'
+                boxSizing: 'border-box',
+                minHeight: 'calc(100dvh - var(--header-height, 72px) - var(--footer-height, 56px))'
             }}>
                 <InfoCard
                     name="Daniel Vinther Andersen"
-                    imageSrc={myPhoto}
+                    imageSrc="/images/me.jpg"
                     imageAlt="Photo of Daniel Vinther Andersen"
                     hobbies={['Coding', 'Family', 'Bowling']}
                 />
