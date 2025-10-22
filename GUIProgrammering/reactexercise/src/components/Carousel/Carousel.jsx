@@ -15,9 +15,11 @@ export const Carousel = () => {
     function goNext() {
         setIndex((i) => (i + 1) % images.length);
     }
+
     function goPrev() {
         setIndex((i) => (i - 1 + images.length) % images.length);
     }
+
     function goTo(i) {
         setIndex(((i % images.length) + images.length) % images.length);
     }
