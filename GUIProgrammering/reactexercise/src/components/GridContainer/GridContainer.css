@@ -1,0 +1,25 @@
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 16px;
+    column-gap: 48px;
+    align-items: start;
+    justify-items: center;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+@media (max-width: 980px) {
+    .grid-container {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .grid-container {
+        grid-template-columns: 1fr;
+    }
+}

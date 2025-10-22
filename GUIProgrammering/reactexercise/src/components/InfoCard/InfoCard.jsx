@@ -1,116 +1,62 @@
-import { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import './InfoCard.css';
 
-const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-
-const defaultHobbies = ['Coding', 'Photography', 'Running'];
-
 export const InfoCard = ({
-    name = 'Your Name',
-    imageSrc = '/images/me.jpg',
-    imageAlt = 'Portrait of me',
-    hobbies = defaultHobbies,
+    title,
+    imageSrc,
+    imageAlt = 'Product image',
+    price,
+    description,
+    onBuy
 }) => {
-    const centerRef = useRef(null);
-    const cardRef = useRef(null);
-    const titleRef = useRef(null);
-
-    const [offset, setOffset] = useState({ x: 0, y: 0 });
-
-    const handleTitleMouseMove = (e) => {
-        if (!centerRef.current || !cardRef.current || !titleRef.current) {
-            return;
-        }
-
-        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            return;
-        }
-
-        const containerRect = centerRef.current.getBoundingClientRect();
-        const cardRect = cardRef.current.getBoundingClientRect();
-        const titleRect = titleRef.current.getBoundingClientRect();
-
-        const maxX = Math.max(0, (containerRect.width - cardRect.width) / 2);
-        const maxY = Math.max(0, (containerRect.height - cardRect.height) / 2);
-
-        const cx = titleRect.left + (titleRect.width / 2);
-        const cy = titleRect.top + (titleRect.height / 2);
-        const nx = clamp((e.clientX - cx) / (titleRect.width / 2), -1, 1);
-        const ny = clamp((e.clientY - cy) / (titleRect.height / 2), -1, 1);
-
-        const x = nx * maxX;
-        const y = ny * maxY;
-
-        setOffset({ x, y });
-    };
-
-    const resetPosition = () => setOffset({ x: 0, y: 0 });
-
-    useEffect(() => {
-        const onResize = () => {
-            if (!centerRef.current || !cardRef.current) {
-                return;
-            }
-            const containerRect = centerRef.current.getBoundingClientRect();
-            const cardRect = cardRef.current.getBoundingClientRect();
-            const maxX = Math.max(0, (containerRect.width - cardRect.width) / 2);
-            const maxY = Math.max(0, (containerRect.height - cardRect.height) / 2);
-
-            setOffset((prev) => ({
-                x: clamp(prev.x, -maxX, maxX),
-                y: clamp(prev.y, -maxY, maxY),
-            }));
-        };
-
-        window.addEventListener('resize', onResize);
-        return () => window.removeEventListener('resize', onResize);
-    }, []);
-
     return (
-        <div className="info-card-center" ref={centerRef}>
-            <section
-                className="info-card"
-                aria-labelledby="info-card-title"
-                style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
-                ref={cardRef}
-            >
-                <div className="info-card__image-wrap">
-                    <img
-                        className="info-card__image"
-                        src={imageSrc}
-                        alt={imageAlt}
-                        loading="lazy"
-                        onMouseEnter={resetPosition}
-                    />
-                </div>
-                <div className="info-card__content">
-                    <h2
-                        id="info-card-title"
-                        className="info-card__title"
-                        ref={titleRef}
-                        onMouseMove={handleTitleMouseMove}
-                    >
-                        {name}
-                    </h2>
+        <section className="info-card" aria-label={`Info card: ${title}`}>
+            <div className="info-card__image-wrap">
+                <img
+                    className="info-card__image"
+                    src={imageSrc}
+                    alt={imageAlt}
+                    loading="lazy"
+                />
+            </div>
 
-                    <h3 className="info-card__subtitle">My Hobbies</h3>
-                    <ul className="info-card__list">
-                        {hobbies.slice(0, 3).map((hobby, idx) => (
-                            <li key={`${hobby}-${idx}`} className="info-card__list-item">
-                                {hobby}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </section>
-        </div>
+            <div className="info-card__content">
+                <h2 className="info-card__title">{title}</h2>
+                <div className="info-card__price">{price}</div>
+                <p className="info-card__description">{description}</p>
+                <button
+                    className="sparkle-btn"
+                    type="button"
+                    onClick={() => { if (typeof onBuy === 'function') { onBuy(); } }}
+                >
+                    <svg viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M93.781 51.578C95 50.969 96 49.359 96 48c0-1.375-1-2.969-2.219-3.578 0 0-22.868-1.514-31.781-10.422-8.915-8.91-10.438-31.781-10.438-31.781C50.969 1 49.375 0 48 0s-2.969 1-3.594 2.219c0 0-1.5 22.87-10.406 31.781-8.908 8.913-31.781 10.422-31.781 10.422C1 45.031 0 46.625 0 48c0 1.359 1 2.969 2.219 3.578 0 0 22.873 1.51 31.781 10.422 8.906 8.911 10.406 31.781 10.406 31.781C45.031 95 46.625 96 48 96s2.969-1 3.562-2.219c0 0 1.523-22.871 10.438-31.781 8.913-8.908 31.781-10.422 31.781-10.422Z" />
+                    </svg>
+                    <svg viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M93.781 51.578C95 50.969 96 49.359 96 48c0-1.375-1-2.969-2.219-3.578 0 0-22.868-1.514-31.781-10.422-8.915-8.91-10.438-31.781-10.438-31.781C50.969 1 49.375 0 48 0s-2.969 1-3.594 2.219c0 0-1.5 22.87-10.406 31.781-8.908 8.913-31.781 10.422-31.781 10.422C1 45.031 0 46.625 0 48c0 1.359 1 2.969 2.219 3.578 0 0 22.873 1.51 31.781 10.422 8.906 8.911 10.406 31.781 10.406 31.781C45.031 95 46.625 96 48 96s2.969-1 3.562-2.219c0 0 1.523-22.871 10.438-31.781 8.913-8.908 31.781-10.422 31.781-10.422Z" />
+                    </svg>
+                    <svg viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M93.781 51.578C95 50.969 96 49.359 96 48c0-1.375-1-2.969-2.219-3.578 0 0-22.868-1.514-31.781-10.422-8.915-8.91-10.438-31.781-10.438-31.781C50.969 1 49.375 0 48 0s-2.969 1-3.594 2.219c0 0-1.5 22.87-10.406 31.781-8.908 8.913-31.781 10.422-31.781 10.422C1 45.031 0 46.625 0 48c0 1.359 1 2.969 2.219 3.578 0 0 22.873 1.51 31.781 10.422 8.906 8.911 10.406 31.781 10.406 31.781C45.031 95 46.625 96 48 96s2.969-1 3.562-2.219c0 0 1.523-22.871 10.438-31.781 8.913-8.908 31.781-10.422 31.781-10.422Z" />
+                    </svg>
+                    <svg viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M93.781 51.578C95 50.969 96 49.359 96 48c0-1.375-1-2.969-2.219-3.578 0 0-22.868-1.514-31.781-10.422-8.915-8.91-10.438-31.781-10.438-31.781C50.969 1 49.375 0 48 0s-2.969 1-3.594 2.219c0 0-1.5 22.87-10.406 31.781-8.908 8.913-31.781 10.422-31.781 10.422C1 45.031 0 46.625 0 48c0 1.359 1 2.969 2.219 3.578 0 0 22.873 1.51 31.781 10.422 8.906 8.911 10.406 31.781 10.406 31.781C45.031 95 46.625 96 48 96s2.969-1 3.562-2.219c0 0 1.523-22.871 10.438-31.781 8.913-8.908 31.781-10.422 31.781-10.422Z" />
+                    </svg>
+                    <svg viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M93.781 51.578C95 50.969 96 49.359 96 48c0-1.375-1-2.969-2.219-3.578 0 0-22.868-1.514-31.781-10.422-8.915-8.91-10.438-31.781-10.438-31.781C50.969 1 49.375 0 48 0s-2.969 1-3.594 2.219c0 0-1.5 22.87-10.406 31.781-8.908 8.913-31.781 10.422-31.781 10.422C1 45.031 0 46.625 0 48c0 1.359 1 2.969 2.219 3.578 0 0 22.873 1.51 31.781 10.422 8.906 8.911 10.406 31.781 10.406 31.781C45.031 95 46.625 96 48 96s2.969-1 3.562-2.219c0 0 1.523-22.871 10.438-31.781 8.913-8.908 31.781-10.422 31.781-10.422Z" />
+                    </svg>
+                    <span>Køb Mig</span>
+                    <span aria-hidden="true">Køb Mig</span>
+                </button>
+            </div>
+        </section>
     );
 };
 
 InfoCard.propTypes = {
-    name: PropTypes.string,
-    imageSrc: PropTypes.string,
+    title: PropTypes.string.isRequired,
+    imageSrc: PropTypes.string.isRequired,
     imageAlt: PropTypes.string,
-    hobbies: PropTypes.arrayOf(PropTypes.string)
+    price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    description: PropTypes.string.isRequired,
+    onBuy: PropTypes.func
 };

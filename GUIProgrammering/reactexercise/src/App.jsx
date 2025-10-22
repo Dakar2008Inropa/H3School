@@ -1,25 +1,53 @@
+import {useMemo} from "react";
 import { Header } from "./components/Header/Header";
 import { InfoCard } from "./components/InfoCard/InfoCard";
 import { Footer } from "./components/Footer/Footer";
+import {GridContainer} from "./components/GridContainer/GridContainer";
+
+function makeProducts() {
+    const fmt = new Intl.NumberFormat("da-DK");
+
+    return Array.from({ length: 9 }, (_, i) => {
+        const priceValue = Math.floor(Math.random() * (5000 - 100 + 1)) + 100;
+
+        return {
+            id: i + 1,
+            title: `Product ${i + 1}`,
+            imageSrc: `/images/p${i + 1}.jpg`,
+            imageAlt: `Product ${i + 1} image`,
+            price: `${fmt.format(priceValue)} kr`,
+            description: "A short description of the product."
+        };
+    });
+}
 
 function App() {
+    const products = useMemo(() => makeProducts(), []);
     return (
         <>
             <Header name="Daniel Vinther Andersen" />
             <main style={{
                 padding: 16,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
                 boxSizing: 'border-box',
-                minHeight: 'calc(100dvh - var(--header-height, 72px) - var(--footer-height, 56px))'
-            }}>
+                minHeight: 'calc(100dvh - var(--header-height, 72px) - var(--footer-height, 56px))',
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: 'center'
+            }}
+            >
+            <GridContainer>
+            {products.map(p => (
                 <InfoCard
-                    name="Daniel Vinther Andersen"
-                    imageSrc="/images/me.jpg"
-                    imageAlt="Photo of Daniel Vinther Andersen"
-                    hobbies={['Coding', 'Family', 'Bowling']}
+                key={p.id}
+                title={p.title}
+                imageSrc={p.imageSrc}
+                imageAlt={p.imageAlt}
+                price={p.price}
+                description={p.description}
+                onBuy={() => console.log(`Buy clicked for ${p.title}`)}
                 />
+            ))}
+            </GridContainer>
             </main>
             <Footer birth="200286" />
         </>
