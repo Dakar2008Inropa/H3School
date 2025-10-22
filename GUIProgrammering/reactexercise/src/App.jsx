@@ -3,6 +3,8 @@ import { Header } from "./components/Header/Header";
 import { InfoCard } from "./components/InfoCard/InfoCard";
 import { Footer } from "./components/Footer/Footer";
 import {GridContainer} from "./components/GridContainer/GridContainer";
+import { Counter } from "./components/Counter/Counter";
+import { Carousel} from "./components/Carousel/Carousel";
 
 function makeProducts() {
     const fmt = new Intl.NumberFormat("da-DK");
@@ -35,6 +37,9 @@ function App() {
                 justifyContent: 'center'
             }}
             >
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: 16 }}>
+            <Carousel />
+            <Counter />
             <GridContainer>
             {products.map(p => (
                 <InfoCard
@@ -48,6 +53,7 @@ function App() {
                 />
             ))}
             </GridContainer>
+            </div>
             </main>
             <Footer birth="200286" />
         </>
