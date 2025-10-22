@@ -1,14 +1,10 @@
-import PropTypes from 'prop-types';
-import './GridContainer.css';
+import PropTypes from "prop-types";
+import "./GridContainer.css";
 
 export const GridContainer = ({ children }) => {
-    return (
-        <div className="grid-container">
-            {children}
-        </div>
-    );
+  return <div className="grid-container">{children}</div>;
 };
 
 GridContainer.propTypes = {
-    children: PropTypes.node
+  children: PropTypes.node,
 };

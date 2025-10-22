@@ -3,6 +3,10 @@ import "./Counter.css";
 
 const STORAGE_KEY = "counter:value";
 
+document.title = "React Test";
+
+const originalTitle = document.title;
+
 export const Counter = () => {
     const [count, setCount] = useState(() => {
         try {
@@ -18,6 +22,7 @@ export const Counter = () => {
     useEffect(() => {
         try {
             localStorage.setItem(STORAGE_KEY, String(count));
+            document.title = `${originalTitle} - Count: ${count}`;
         } catch (e) {
             console.error("Failed to write counter to localStorage.", e);
         }
@@ -30,7 +35,7 @@ export const Counter = () => {
     const pressRef = useRef({
         timer: null,
         delay: INITIAL_DELAY,
-        isHolding: false
+        isHolding: false,
     });
 
     function clearPressTimer() {
@@ -45,9 +50,12 @@ export const Counter = () => {
         const currentDelay = pressRef.current.delay;
 
         pressRef.current.timer = setTimeout(() => {
-            setCount(c => c + 1);
+            setCount((c) => c + 1);
 
-            const nextDelay = Math.max(MIN_DELAY, Math.floor(currentDelay * ACCEL_FACTOR));
+            const nextDelay = Math.max(
+                MIN_DELAY,
+                Math.floor(currentDelay * ACCEL_FACTOR)
+            );
             pressRef.current.delay = nextDelay;
 
             if (pressRef.current.isHolding) {
@@ -62,7 +70,7 @@ export const Counter = () => {
         pressRef.current.isHolding = true;
         pressRef.current.delay = INITIAL_DELAY;
 
-        setCount(c => c + 1);
+        setCount((c) => c + 1);
         scheduleNext();
     }
 
@@ -74,10 +82,6 @@ export const Counter = () => {
     useEffect(() => {
         return () => clearPressTimer();
     }, []);
-
-    function increment() {
-        setCount((c) => c + 1);
-    }
 
     function reset() {
         setCount(0);
@@ -94,7 +98,7 @@ export const Counter = () => {
                 {count}
             </div>
             <div className="counter__actions">
-                {                                 }
+                { }
                 <button
                     type="button"
                     className="counter__btn counter__btn--inc"
