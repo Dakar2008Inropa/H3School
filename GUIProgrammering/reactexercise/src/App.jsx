@@ -1,6 +1,7 @@
 ﻿import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { MainLayout } from "./layout/MainLayout/MainLayout";
+import { ShowProduct } from "./components/ShowProduct/ShowProduct";
 
 const pageModules = import.meta.glob("./pages/*.jsx");
 
@@ -36,6 +37,7 @@ function App() {
                                 ? <Route key={r.key} index element={r.element} />
                                 : <Route key={r.key} path={r.path} element={r.element} />
                         )}
+                        <Route path="/products/:id" element={<ShowProduct />} />
                         <Route path="*" element={<div style={{ padding: 16 }}>Page not found</div>} />
                     </Route>
                 </Routes>

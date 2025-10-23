@@ -16,30 +16,35 @@ const navItems = Object.keys(pageModules)
 
 export const Navigation = () => {
     return (
-        <nav className="nav" role="navigation" aria-label="Main">
-            <div className="nav__inner">
-                <ul className="nav__list">
-                    <li className="nav__item">
-                        <NavLink
-                            to="/"
-                            end
-                            className={({ isActive }) => "nav__link" + (isActive ? " is-active" : "")}
-                        >
-                            Home
-                        </NavLink>
-                    </li>
-                    {navItems.map(item => (
-                        <li key={item.path} className="nav__item">
+        <>
+            { }
+            <nav className="nav" role="navigation" aria-label="Main">
+                <div className="nav__inner">
+                    <ul className="nav__list">
+                        <li className="nav__item">
                             <NavLink
-                                to={item.path}
+                                to="/"
+                                end
                                 className={({ isActive }) => "nav__link" + (isActive ? " is-active" : "")}
                             >
-                                {item.label}
+                                Home
                             </NavLink>
                         </li>
-                    ))}
-                </ul>
-            </div>
-        </nav>
+                        {navItems.map(item => (
+                            <li key={item.path} className="nav__item">
+                                <NavLink
+                                    to={item.path}
+                                    className={({ isActive }) => "nav__link" + (isActive ? " is-active" : "")}
+                                >
+                                    {item.label}
+                                </NavLink>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </nav>
+            { }
+            <div className="nav-spacer" />
+        </>
     );
 };

@@ -17,6 +17,7 @@
     --border-soft: rgba(255, 255, 255, 0.12);
     --border-top: rgba(255, 255, 255, 0.06);
     --shadow-outer: 0 6px 24px rgba(0, 0, 0, 0.35);
+    --info-card-height: 380px;
 }
 
 html, body, #root {
