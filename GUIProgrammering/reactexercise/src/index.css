@@ -1,4 +1,4 @@
-:root {
+﻿:root {
     font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
     line-height: 1.5;
     font-weight: 400;
@@ -9,6 +9,14 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    --grad-1: #ff6ec4;
+    --grad-2: #7873f5;
+    --grad-3: #4adede;
+    --grad-4: #ff9f1c;
+    --card-bg: rgba(20, 20, 28, 0.45);
+    --border-soft: rgba(255, 255, 255, 0.12);
+    --border-top: rgba(255, 255, 255, 0.06);
+    --shadow-outer: 0 6px 24px rgba(0, 0, 0, 0.35);
 }
 
 html, body, #root {
@@ -17,6 +25,7 @@ html, body, #root {
 
 body {
     margin: 0;
+    overflow-y: hidden;
 }
 
 main {

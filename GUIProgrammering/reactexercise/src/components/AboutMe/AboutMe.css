@@ -1,0 +1,100 @@
+﻿.about-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 16px;
+    width: 100%;
+    max-width: 1000px;
+    background: var(--card-bg);
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    border: 1px solid var(--border-soft);
+    border-radius: 16px;
+    box-shadow: var(--shadow-outer), inset 0 1px 0 var(--border-top);
+    padding: 16px;
+    overflow: hidden;
+}
+
+    .about-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--grad-1), var(--grad-2), var(--grad-3), var(--grad-4), var(--grad-2));
+        background-size: 300% 100%;
+        animation: stripeShift 14s linear infinite;
+        opacity: 0.9;
+    }
+
+.about-card__media {
+    background: linear-gradient(135deg, var(--grad-1), var(--grad-2), var(--grad-3));
+    padding: 2px;
+    border-radius: 14px;
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.about-card__image {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: none;
+    display: block;
+    filter: grayscale(10%);
+}
+
+.about-card__content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.about-card__title {
+    margin: 0;
+    font-size: clamp(1.2rem, 1rem + 1vw, 1.6rem);
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    color: transparent;
+    background-image: linear-gradient(90deg, var(--grad-2), var(--grad-3));
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+.about-card__text,
+.about-card__bullets {
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+}
+
+.about-card__bullets {
+    padding-left: 20px;
+}
+
+@keyframes stripeShift {
+    0% {
+        background-position: 0% 0%;
+    }
+
+    100% {
+        background-position: 300% 0%;
+    }
+}
+
+@media (max-width: 640px) {
+    .about-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .about-card__media {
+        order: -1;
+    }
+
+    .about-card__image {
+        width: 120px;
+        height: 120px;
+    }
+}

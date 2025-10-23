@@ -1,63 +1,46 @@
-import { useMemo } from "react";
-import { Header } from "./components/Header/Header";
-import { InfoCard } from "./components/InfoCard/InfoCard";
-import { Footer } from "./components/Footer/Footer";
-import { GridContainer } from "./components/GridContainer/GridContainer";
-import { Counter } from "./components/Counter/Counter";
-import { Carousel } from "./components/Carousel/Carousel";
+﻿import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Suspense, lazy } from "react";
+import { MainLayout } from "./layout/MainLayout/MainLayout";
 
-function makeProducts() {
-    const fmt = new Intl.NumberFormat("da-DK");
+const pageModules = import.meta.glob("./pages/*.jsx");
 
-    return Array.from({ length: 9 }, (_, i) => {
-        const priceValue = Math.floor(Math.random() * (5000 - 100 + 1)) + 100;
+const dynamicRoutes = Object.entries(pageModules).map(([path, importer]) => {
+    const match = path.match(/\/pages\/(.+)\.jsx$/);
+    const name = match ? match[1] : "Page";
+    const slug = name.toLowerCase();
 
-        return {
-            id: i + 1,
-            title: `Product ${i + 1}`,
-            imageSrc: `/images/p${i + 1}.jpg`,
-            imageAlt: `Product ${i + 1} image`,
-            price: `${fmt.format(priceValue)} kr`,
-            description: "A short description of the product."
-        };
-    });
-}
+    const Component = lazy(() =>
+        importer().then(mod => {
+            const cmp = mod.default ?? mod[name];
+            if (!cmp) {
+                throw new Error(`Page "${name}" must export default or named "${name}".`);
+            }
+            return { default: cmp };
+        })
+    );
+
+    if (slug === "home") {
+        return { key: "index", index: true, element: <Component /> };
+    }
+    return { key: slug, path: slug, element: <Component /> };
+});
 
 function App() {
-    const products = useMemo(() => makeProducts(), []);
     return (
-        <>
-            <Header name="Daniel Vinther Andersen" />
-            <main style={{
-                padding: 16,
-                boxSizing: 'border-box',
-                minHeight: 'calc(100dvh - var(--header-height, 72px) - var(--footer-height, 56px))',
-                display: 'flex',
-                alignItems: 'flex-start',
-                justifyContent: 'center'
-            }}
-            >
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: 16 }}>
-                    <Carousel />
-                    <Counter />
-                    <GridContainer>
-                        {products.map(p => (
-                            <InfoCard
-                                key={p.id}
-                                title={p.title}
-                                imageSrc={p.imageSrc}
-                                imageAlt={p.imageAlt}
-                                price={p.price}
-                                description={p.description}
-                                onBuy={() => console.log(`Buy clicked for ${p.title}`)}
-                            />
-                        ))}
-                    </GridContainer>
-                </div>
-            </main>
-            <Footer birth="200286" />
-        </>
-    )
+        <BrowserRouter>
+            <Suspense fallback={<div style={{ padding: 16 }}>Loading…</div>}>
+                <Routes>
+                    <Route path="/" element={<MainLayout />}>
+                        {dynamicRoutes.map(r =>
+                            r.index
+                                ? <Route key={r.key} index element={r.element} />
+                                : <Route key={r.key} path={r.path} element={r.element} />
+                        )}
+                        <Route path="*" element={<div style={{ padding: 16 }}>Page not found</div>} />
+                    </Route>
+                </Routes>
+            </Suspense>
+        </BrowserRouter>
+    );
 }
-
-export default App
+export default App;

@@ -10,7 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="node_modules\.vite-temp\" />
-    <Folder Include="src\layout\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="node_modules\%40babel\code-frame\lib\index.js" />
