@@ -1,8 +1,11 @@
 ﻿import { useState } from "react";
 import "./ContactMe.css";
+import { useAppNavigation } from "../../routes/useAppNavigation.jsx";
 
 export const ContactMe = () => {
     const [status, setStatus] = useState("");
+
+    const nav = useAppNavigation();
 
     function handleSubmit(event) {
         event.preventDefault();
@@ -65,11 +68,11 @@ export const ContactMe = () => {
                 </div>
 
                 <div className="contact-card__actions">
-                    <button type="submit" className="contact-card__button">Send Message</button>
+                    <button type="button" onClick={() => nav.goHome()} className="contact-card__button">Send Message</button>
                 </div>
 
                 {status && (
-                    <p className="contact-card__status" role="status" aria-live="polite">
+                    <p className="contact-card__status" role="output" aria-live="polite">
                         {status}
                     </p>
                 )}
