@@ -1,0 +1,87 @@
+﻿.branding-banner {
+    position: relative;
+    width: 100%;
+    min-height: 600px;
+    overflow: hidden;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.16);
+    font-family: Verdana, sans-serif;
+    margin-bottom: 100px;
+}
+
+.branding-banner__overlay {
+    position: absolute;
+    height: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px;
+    padding-top: 120px;
+}
+
+.branding-banner__overlay--left {
+    inset: 0 auto 0 0;
+}
+
+.branding-banner__overlay--right {
+    inset: 0 0 0 auto;
+}
+
+.branding-banner__content {
+    color: #ffffff;
+    max-width: 560px;
+    text-align: right;
+}
+
+.branding-banner__title {
+    margin: 0 0 12px 0;
+    font-size: 2.2rem;
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+}
+
+.branding-banner__subtitle {
+    margin: 0 0 8px 0;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    opacity: 0.95;
+}
+
+.branding-banner__highlight {
+    margin: 4px 0 0 0;
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+}
+
+@media (max-width: 900px) {
+    .branding-banner {
+        min-height: 320px;
+    }
+
+    .branding-banner__title {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .branding-banner {
+        min-height: 280px;
+    }
+
+    .branding-banner__overlay {
+        padding: 16px;
+    }
+
+    .branding-banner__title {
+        font-size: 1.5rem;
+    }
+
+    .branding-banner__subtitle,
+    .branding-banner__highlight {
+        font-size: 0.95rem;
+    }
+}

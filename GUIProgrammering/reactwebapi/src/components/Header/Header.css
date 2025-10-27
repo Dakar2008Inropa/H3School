@@ -1,0 +1,56 @@
+﻿:root {
+    --header-height: 100px;
+}
+
+.header-title {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 600;
+    height: var(--header-height);
+    display: flex;
+    justify-content: center;
+    background: #f2f1ec;
+    align-items: center;
+    width: 100%;
+    padding: 20px;
+    user-select: none;
+    box-sizing: border-box;
+    border-bottom: #8f5d3e solid 3px;
+}
+
+.left-text, .right-text {
+    font-weight: bold;
+    font-family: Verdana, sans-serif;
+    color: #8f5d3e;
+    text-transform: uppercase;
+    font-size: 3em;
+}
+
+.left-text {
+    margin-right: -5px;
+}
+
+.right-text {
+    margin-left: 4px;
+}
+
+.slash {
+    font-family: Verdana, sans-serif;
+    margin: 0 10px;
+    color: #db9d5a;
+    font-weight: bold;
+    letter-spacing: -12px;
+    font-size: 2.2em;
+}
+
+.chart-icon {
+    position: absolute;
+    right: 25px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.home-link {
+    text-decoration: none;
+}

@@ -17,7 +17,6 @@ const navItems = Object.keys(pageModules)
 export const Navigation = () => {
     return (
         <>
-            { }
             <nav className="nav" role="navigation" aria-label="Main">
                 <div className="nav__inner">
                     <ul className="nav__list">
@@ -43,7 +42,6 @@ export const Navigation = () => {
                     </ul>
                 </div>
             </nav>
-            { }
             <div className="nav-spacer" />
         </>
     );

@@ -1,0 +1,157 @@
+﻿.footer {
+    background: #905f3d;
+    color: #f6efe8;
+    padding-top: 56px;
+    padding-bottom: 20px;
+    font-family: Verdana, sans-serif;
+}
+
+    .footer, .footer * {
+        box-sizing: border-box;
+    }
+
+.footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.4fr;
+    gap: 48px;
+    align-items: start;
+}
+
+.footer-col-title {
+    margin: 0 0 16px 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.footer-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+    .footer-links li + li {
+        margin-top: 45px;
+    }
+
+    .footer-links a {
+        text-decoration: none;
+        color: #f6efe8;
+        opacity: 0.95;
+    }
+
+        .footer-links a:hover,
+        .footer-links a:focus {
+            text-decoration: underline;
+            color: #ffffff;
+        }
+
+.newsletter-col {
+    max-width: 760px;
+}
+
+.newsletter-title {
+    font-size: 44px;
+    line-height: 1.2;
+    margin: 0 0 16px 0;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.newsletter-subtitle {
+    font-size: 18px;
+    line-height: 1.6;
+    margin: 0 0 16px 0;
+}
+
+.newsletter-copy {
+    font-size: 16px;
+    line-height: 1.7;
+    margin: 0 0 16px 0;
+}
+
+.newsletter-fineprint {
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0 0 20px 0;
+    color: rgba(246, 239, 232, 0.85);
+    font-style: italic;
+}
+
+.newsletter-input input {
+    width: 100%;
+    max-width: 760px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background-color: #e8d7c3;
+    color: #33251b;
+    font-size: 16px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+    .newsletter-input input:focus {
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+        border-color: rgba(0, 0, 0, 0.2);
+    }
+
+@media (max-width: 900px) {
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+
+    .newsletter-title {
+        font-size: 36px;
+    }
+
+    .footer {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .footer-links li + li {
+        margin-top: 16px;
+    }
+
+    .footer-links a {
+        display: inline-block;
+        padding: 6px 0;
+    }
+
+    .newsletter-input {
+        margin-top: 8px;
+    }
+
+        .newsletter-input input {
+            max-width: 100%;
+        }
+}
+
+@media (max-width: 480px) {
+    .newsletter-title {
+        font-size: 32px;
+        line-height: 1.25;
+    }
+
+    .newsletter-subtitle,
+    .newsletter-copy {
+        font-size: 15px;
+        line-height: 1.6;
+    }
+
+    .footer {
+        padding-top: 40px;
+        padding-bottom: 16px;
+    }
+
+    .footer-grid {
+        gap: 24px;
+    }
+}
