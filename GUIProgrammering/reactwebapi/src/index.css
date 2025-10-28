@@ -1,4 +1,18 @@
-﻿body {
+﻿html, body, #root{
+    height: 100%;
+}
+
+.page{
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.page > main{
+    flex: 1;
+}
+
+body {
     background: #f2f1ec;
     margin: 0;
 }

@@ -18,8 +18,23 @@ namespace GUIWebAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductReadDto>>> GetAll([FromQuery] int? categoryId = null, [FromQuery] string q = null)
+        public async Task<ActionResult<IEnumerable<ProductReadDto>>> GetAll([FromQuery] int? categoryId = null, [FromQuery] string q = null, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 6)
         {
+            if (pageNumber < 1)
+            {
+                return BadRequest(new { message = "Page number must be greater than 1." });
+            }
+
+            if (pageSize < 1)
+            {
+                return BadRequest(new { message = "Page size must be greater than 1." });
+            }
+
+            if(pageSize > 20)
+            {
+                pageSize = 20;
+            }
+
             IQueryable<Product> query = db.Products
                 .AsNoTracking()
                 .Include(p => p.Category);
@@ -35,12 +50,28 @@ namespace GUIWebAPI.Controllers
                 query = query.Where(p => EF.Functions.Like(p.Name, "%" + term + "%"));
             }
 
-            List<ProductReadDto> result = await query.OrderBy(p => p.Name).ThenBy(p => p.ProductId).ProjectToType<ProductReadDto>().ToListAsync();
+            int totalCount = await query.CountAsync();
+            int totalPages = totalCount == 0 ? 0 : (int)Math.Ceiling(totalCount / (double)pageSize);
+            int skip = (pageNumber - 1) * pageSize;
+
+            List<ProductReadDto> result = await query
+                .OrderBy(p => p.Name)
+                .ThenBy(p => p.ProductId)
+                .Skip(skip)
+                .Take(pageSize)
+                .ProjectToType<ProductReadDto>()
+                .ToListAsync();
 
             foreach (ProductReadDto dto in result)
             {
                 dto.ImageUrl = MakeAbsoluteUrl(dto.ImageUrl);
             }
+
+            Response.Headers.Append("X-Total-Count", totalCount.ToString());
+            Response.Headers.Append("X-Total-Pages", totalPages.ToString());
+            Response.Headers.Append("X-Page-Number", pageNumber.ToString());
+            Response.Headers.Append("X-Page-Size", pageSize.ToString());
+            Response.Headers.Append("Access-Control-Expose-Headers", "X-Total-Count,X-Total-Pages,X-Page-Number,X-Page-Size");
 
             return Ok(result);
         }

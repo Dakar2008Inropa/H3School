@@ -4,14 +4,18 @@ import { Header } from "../../components/Header/Header";
 import { Footer } from "../../components/Footer/Footer";
 
 export const MainLayout = () => {
-    return (
-        <>
-            <Header titlePart1="Aura" titlePart2="Edit" />
-            <Navigation />
-            <div className="content-wrapper">
-                <Outlet />
-            </div>
-            <Footer />
-        </>
-    )
-}
+  return (
+    <>
+      <div className="page">
+        <main>
+          <Header titlePart1="Aura" titlePart2="Edit" />
+          <Navigation />
+          <div className="content-wrapper">
+            <Outlet />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    </>
+  );
+};

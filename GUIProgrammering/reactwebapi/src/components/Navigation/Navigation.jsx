@@ -77,7 +77,7 @@ export const Navigation = () => {
                     </NavLink>
                 </li>
                 {categories.map(c => {
-                    const to = `/products?categoryId=${encodeURIComponent(c.categoryId)}`;
+                    const to = `/products?categoryId=${encodeURIComponent(c.categoryId)}&categoryName=${encodeURIComponent(c.name)}`;
                     const isActiveCat = isProductsPath && String(activeCategory) === String(c.categoryId);
                     return (
                         <li key={c.categoryId} className="nav_item">

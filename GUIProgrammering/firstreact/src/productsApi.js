@@ -9,7 +9,7 @@ function qs(params) {
 }
 
 export const ProductsApi = {
-    list: (signal) => http.get("/api/Products", { signal }),
+    list: (signal) => http.get("/api/Products?pageNumber=1&pageSize=100", { signal }),
 
     search: (q, categoryId, signal) =>
         http.get(`/api/Products/search${qs({ q, categoryId })}`, { signal }),

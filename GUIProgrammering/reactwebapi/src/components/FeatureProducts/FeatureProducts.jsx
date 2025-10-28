@@ -1,6 +1,39 @@
-﻿import React, { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { ProductsApi } from '../../api/productsApi';
 import './FeatureProducts.css';
+
+const FEATURED_CACHE_KEY = 'featuredProducts:v1';
+const ONE_HOUR = 60 * 60 * 1000;
+
+function loadFeaturedCache(){
+    try{
+        const raw = localStorage.getItem(FEATURED_CACHE_KEY);
+        if(!raw) return null;
+        const data = JSON.parse(raw);
+        if(!Array.isArray(data?.ids) || typeof data?.ts !== 'number') return null;
+        return data;
+    } catch{
+        return null;
+    }
+}
+
+function saveFeaturedCache(ids){
+    try{
+        localStorage.setItem(FEATURED_CACHE_KEY, JSON.stringify({ids, ts: Date.now()}));
+    } catch{
+        // Ignore errors
+    }
+}
+
+function pickRandomItems(list, count = 3){
+    if(!Array.isArray(list) || list.length === 0) return [];
+    const copy = list.slice();
+    for (let i = copy.length -1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy.slice(0, Math.min(count, copy.length));
+}
 
 function formatDkk(price) {
     const value = Number(price) || 0;
@@ -51,9 +84,24 @@ export const FeatureProducts = () => {
                 const raw = await ProductsApi.list(ac.signal);
                 const list = Array.isArray(raw) ? raw.map(mapProduct) : [];
 
-                const three = list.slice().sort(() => Math.random() - 0.5).slice(0, 3);
+                let selected = [];
+                const cache = typeof window !== 'undefined' ? loadFeaturedCache() : null;
 
-                setItems(three.length > 0 ? three : list.slice(0, 3));
+                if(cache && (Date.now() - cache.ts) < ONE_HOUR){
+                    selected = cache.ids
+                    .map(id => list.find(p => String(p.id) === String(id)))
+                    .filter(Boolean);
+                }
+
+                const needed = Math.min(3, list.length);
+                if(selected.length !== needed){
+                    selected = pickRandomItems(list, 3);
+                    if(selected.length){
+                        saveFeaturedCache(selected.map(p => p.id));
+                    }
+                }
+
+                setItems(selected);
             } catch (e) {
                 if (e?.name === 'AbortError') return;
                 setError(e?.message || 'Failed to load products.');
