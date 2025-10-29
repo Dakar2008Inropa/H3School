@@ -33,6 +33,7 @@
     color: #ffffff;
     max-width: 560px;
     text-align: right;
+    user-select: none;
 }
 
 .branding-banner__title {

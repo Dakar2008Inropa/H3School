@@ -1,16 +1,17 @@
-﻿html, body, #root{
+﻿html, body, #root {
     height: 100%;
+    user-select: none;
 }
 
-.page{
+.page {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-.page > main{
-    flex: 1;
-}
+    .page > main {
+        flex: 1;
+    }
 
 body {
     background: #f2f1ec;

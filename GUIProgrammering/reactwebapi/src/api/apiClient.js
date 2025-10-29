@@ -1,15 +1,22 @@
 ﻿const BASE_URL = import.meta.env.VITE_API_URL || "https://localhost:7032";
 
-async function request(path, { method = "GET", body, signal } = {}) {
+function buildHeaders(isFormData) {
+    return isFormData
+        ? { Accept: "application/json" }
+        : { "Content-Type": "application/json", Accept: "application/json" };
+}
+
+function isJsonResponse(contentType) {
+    return (contentType || "").includes("application/json");
+}
+
+async function send(path, { method = "GET", body, signal } = {}) {
     const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
 
-    let response;
     try {
-        response = await fetch(BASE_URL + path, {
+        return await fetch(BASE_URL + path, {
             method,
-            headers: isFormData
-                ? { Accept: "application/json" }
-                : { "Content-Type": "application/json", Accept: "application/json" },
+            headers: buildHeaders(isFormData),
             body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
             signal,
         });
@@ -19,131 +26,102 @@ async function request(path, { method = "GET", body, signal } = {}) {
         err.details = [networkError.message];
         throw err;
     }
+}
 
-    const contentType = response.headers.get("content-type") || "";
+function flattenValidationErrors(errors) {
+    if (!errors || typeof errors !== "object") return [];
+    return Object.entries(errors).flatMap(([field, msgs]) =>
+        Array.isArray(msgs) ? msgs.map(m => `${field}: ${m}`) : [`${field}: ${msgs}`]
+    );
+}
 
-    if (!response.ok) {
-        let message = `HTTP ${response.status} ${response.statusText}`;
-        let details = [];
+async function readJsonSafe(response) {
+    try {
+        return { problem: await response.json(), parseError: null };
+    } catch (e) {
+        return { problem: null, parseError: e };
+    }
+}
 
-        try {
-            if (contentType.includes("application/json")) {
-                const problem = await response.json();
+function buildProblemAddition(problem) {
+    if (!problem || typeof problem !== "object") return { addition: "", details: [] };
 
-                if (problem) {
-                    const parts = [];
-                    if (problem.title) parts.push(problem.title);
-                    if (problem.detail) parts.push(problem.detail);
+    const parts = [];
+    if (problem.title) parts.push(problem.title);
+    if (problem.detail) parts.push(problem.detail);
 
-                    if (problem.errors && typeof problem.errors === "object") {
-                        details = Object.entries(problem.errors).flatMap(([field, msgs]) =>
-                            Array.isArray(msgs)
-                                ? msgs.map(m => `${field}: ${m}`)
-                                : [`${field}: ${msgs}`]
-                        );
-                        if (details.length) parts.push(details.join(" | "));
-                    }
+    const details = flattenValidationErrors(problem.errors);
+    if (details.length) parts.push(details.join(" | "));
 
-                    if (parts.length) message = parts.join(" — ");
-                }
-            } else {
-                const text = await response.text();
-                if (text) message += ` — ${text.slice(0, 400)}`;
-            }
-        } catch (parseError) {
-            message += " — Failed to parse error response from server.";
-            details.push(parseError.message);
+    return {
+        addition: parts.length ? parts.join(" — ") : "",
+        details
+    };
+}
+
+async function buildErrorAddition(response, contentType) {
+    if (isJsonResponse(contentType)) {
+        const { problem, parseError } = await readJsonSafe(response);
+        if (parseError) {
+            return {
+                addition: "Failed to parse error response from server.",
+                details: [parseError.message]
+            };
         }
+        return buildProblemAddition(problem);
+    }
 
-        const err = new Error(message);
+    const text = await response.text();
+    return { addition: text ? text.slice(0, 400) : "", details: [] };
+}
+
+async function readError(response, contentType) {
+    const base = `HTTP ${response.status} ${response.statusText}`;
+
+    const { addition, details } = await buildErrorAddition(response, contentType);
+
+    const message = addition ? `${base} — ${addition}` : base;
+
+    const err = new Error(message);
+    err.status = response.status;
+    err.details = details;
+    throw err;
+}
+
+async function parseSuccess(response, contentType) {
+    if (!isJsonResponse(contentType)) return undefined;
+
+    try {
+        return await response.json();
+    } catch (jsonError) {
+        const err = new Error("Invalid JSON response from server.");
         err.status = response.status;
-        err.details = details;
+        err.details = [jsonError.message];
         throw err;
     }
+}
 
-    if (contentType.includes("application/json")) {
-        try {
-            return await response.json();
-        } catch (jsonError) {
-            const err = new Error("Invalid JSON response from server.");
-            err.status = response.status;
-            err.details = [jsonError.message];
-            throw err;
-        }
-    }
+async function request(path, { method = "GET", body, signal } = {}) {
+    const response = await send(path, { method, body, signal });
+    const contentType = response.headers.get("content-type") || "";
 
+    if (response.ok) return await parseSuccess(response, contentType);
+
+    await readError(response, contentType);
     return undefined;
 }
 
 async function requestWithHeaders(path, { method = "GET", body, signal } = {}) {
-    const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
-
-    let response;
-    try {
-        response = await fetch(BASE_URL + path, {
-            method,
-            headers: isFormData
-                ? { Accept: "application/json" }
-                : { "Content-Type": "application/json", Accept: "application/json" },
-            body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
-            signal,
-        });
-    } catch (networkError) {
-        const err = new Error("Could not connect to the API. Ensure the server is running.");
-        err.status = 0;
-        err.details = [networkError.message];
-        throw err;
-    }
-
+    const response = await send(path, { method, body, signal });
     const contentType = response.headers.get("content-type") || "";
 
-    if (!response.ok) {
-        let message = `HTTP ${response.status} ${response.statusText}`;
-        let details = [];
-        try {
-            if (contentType.includes("application/json")) {
-                const problem = await response.json();
-                if (problem) {
-                    const parts = [];
-                    if (problem.title) parts.push(problem.title);
-                    if (problem.detail) parts.push(problem.detail);
-                    if (problem.errors && typeof problem.errors === "object") {
-                        details = Object.entries(problem.errors).flatMap(([field, msgs]) =>
-                            Array.isArray(msgs)
-                                ? msgs.map(m => `${field}: ${m}`)
-                                : [`${field}: ${msgs}`]
-                        );
-                        if (details.length) parts.push(details.join(" | "));
-                    }
-                    if (parts.length) message = parts.join(" — ");
-                }
-            } else {
-                const text = await response.text();
-                if (text) message += ` — ${text.slice(0, 400)}`;
-            }
-        } catch (parseError) {
-            message += " — Failed to parse error response from server.";
-            details.push(parseError.message);
-        }
-        const err = new Error(message);
-        err.status = response.status;
-        err.details = details;
-        throw err;
+    if (response.ok) {
+        const data = await parseSuccess(response, contentType);
+        return { data, headers: response.headers };
     }
 
-    let data;
-    if (contentType.includes("application/json")) {
-        try {
-            data = await response.json();
-        } catch (jsonError) {
-            const err = new Error("Invalid JSON response from server.");
-            err.status = response.status;
-            err.details = [jsonError.message];
-            throw err;
-        }
-    }
-
-    return { data, headers: response.headers };
+    await readError(response, contentType);
+    return { data: undefined, headers: response.headers };
 }
 
 export const http = {

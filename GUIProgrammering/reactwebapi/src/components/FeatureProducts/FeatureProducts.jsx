@@ -5,30 +5,30 @@ import './FeatureProducts.css';
 const FEATURED_CACHE_KEY = 'featuredProducts:v1';
 const ONE_HOUR = 60 * 60 * 1000;
 
-function loadFeaturedCache(){
-    try{
+function loadFeaturedCache() {
+    try {
         const raw = localStorage.getItem(FEATURED_CACHE_KEY);
-        if(!raw) return null;
+        if (!raw) return null;
         const data = JSON.parse(raw);
-        if(!Array.isArray(data?.ids) || typeof data?.ts !== 'number') return null;
+        if (!Array.isArray(data?.ids) || typeof data?.ts !== 'number') return null;
         return data;
-    } catch{
+    } catch {
         return null;
     }
 }
 
-function saveFeaturedCache(ids){
-    try{
-        localStorage.setItem(FEATURED_CACHE_KEY, JSON.stringify({ids, ts: Date.now()}));
-    } catch{
-        // Ignore errors
+function saveFeaturedCache(ids) {
+    try {
+        localStorage.setItem(FEATURED_CACHE_KEY, JSON.stringify({ ids, ts: Date.now() }));
+    } catch {
+        // Ignorere fejl ved lagring
     }
 }
 
-function pickRandomItems(list, count = 3){
-    if(!Array.isArray(list) || list.length === 0) return [];
+function pickRandomItems(list, count = 3) {
+    if (!Array.isArray(list) || list.length === 0) return [];
     const copy = list.slice();
-    for (let i = copy.length -1; i > 0; i--){
+    for (let i = copy.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [copy[i], copy[j]] = [copy[j], copy[i]];
     }
@@ -87,16 +87,16 @@ export const FeatureProducts = () => {
                 let selected = [];
                 const cache = typeof window !== 'undefined' ? loadFeaturedCache() : null;
 
-                if(cache && (Date.now() - cache.ts) < ONE_HOUR){
+                if (cache && (Date.now() - cache.ts) < ONE_HOUR) {
                     selected = cache.ids
-                    .map(id => list.find(p => String(p.id) === String(id)))
-                    .filter(Boolean);
+                        .map(id => list.find(p => String(p.id) === String(id)))
+                        .filter(Boolean);
                 }
 
                 const needed = Math.min(3, list.length);
-                if(selected.length !== needed){
+                if (selected.length !== needed) {
                     selected = pickRandomItems(list, 3);
-                    if(selected.length){
+                    if (selected.length) {
                         saveFeaturedCache(selected.map(p => p.id));
                     }
                 }
