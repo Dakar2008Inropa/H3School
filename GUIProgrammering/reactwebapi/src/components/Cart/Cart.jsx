@@ -48,17 +48,19 @@ export const Cart = () => {
                                 {lines.map(it => (
                                     <tr key={it.id}>
                                         <td className="cell-product">
-                                            <div className="product-cell">
-                                                <img
-                                                    src={it.image || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="120"><rect width="100%25" height="100%25" fill="%23e9e7e1"/></svg>'}
-                                                    alt={it.title}
-                                                    className="thumb"
-                                                    loading="lazy"
-                                                />
-                                                <div className="meta">
-                                                    <div className="name">{it.title}</div>
+                                            <Link to={`/products/${it.id}`} className="product-link" aria-label={`View ${it.title}`}>
+                                                <div className="product-cell">
+                                                    <img
+                                                        src={it.image || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="120"><rect width="100%25" height="100%25" fill="%23e9e7e1"/></svg>'}
+                                                        alt={it.title}
+                                                        className="thumb"
+                                                        loading="lazy"
+                                                    />
+                                                    <div className="meta">
+                                                        <div className="name">{it.title}</div>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            </Link>
                                         </td>
                                         <td className="cell-price">{formatDkk(it.price)}</td>
                                         <td className="cell-qty">

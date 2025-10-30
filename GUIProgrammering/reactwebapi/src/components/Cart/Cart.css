@@ -28,7 +28,7 @@
 
 .cart-layout {
     display: grid;
-    grid-template-columns: 1fr 320px;
+    grid-template-columns: 2fr 1fr;
     gap: 16px;
     align-items: start;
 }
@@ -105,8 +105,13 @@
 }
 
     .cell-actions .link.danger {
-        color: #b24b3e;
+        color: #000;
     }
+
+        .cell-actions .link.danger:hover {
+            color: #b24b3e;
+            font-weight: bold;
+        }
 
 .cart-actions {
     display: flex;
@@ -122,6 +127,11 @@
     padding: 8px 12px;
     cursor: pointer;
 }
+
+    .btn-clear:hover {
+        background: #8f5d3e;
+        color: #FFF;
+    }
 
 .cart-summary {
     background: #fff;
