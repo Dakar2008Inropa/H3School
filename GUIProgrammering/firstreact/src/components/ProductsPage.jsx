@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+﻿import { useEffect, useState, useRef } from "react";
 import { ProductsApi, ImageFilesApi } from "../productsApi";
 import { CategoriesApi } from "../categoriesApi";
 
@@ -41,7 +41,7 @@ export default function ProductsPage() {
 
     const [newCategory, setNewCategory] = useState({ name: "" });
 
-    const [newProduct, setNewProduct] = useState({ name: "", price: "", categoryId: "", imageFileId: null });
+    const [newProduct, setNewProduct] = useState({ name: "", price: "", categoryId: "", imageFileId: null, description: "" });
 
     const [saving, setSaving] = useState(false);
 
@@ -86,7 +86,8 @@ export default function ProductsPage() {
                     categoryId: p.categoryId ?? null,
                     categoryName: p.categoryName ?? "",
                     imageFileId: p.imageFileId ?? null,
-                    imageUrl: p.imageUrl ?? ""
+                    imageUrl: p.imageUrl ?? "",
+                    description: p.description ?? p.productDescription ?? ""
                 }))
                 : [];
 
@@ -132,7 +133,7 @@ export default function ProductsPage() {
 
     function cancelProduct() {
         setShowCreateProduct(false);
-        setNewProduct({ name: "", price: "", categoryId: "", imageFileId: null });
+        setNewProduct({ name: "", price: "", categoryId: "", imageFileId: null, description: "" });
         setSaving(false);
         setFormError({ message: "", details: [] });
     }
@@ -181,11 +182,14 @@ export default function ProductsPage() {
 
         try {
             setSaving(true);
+            const desc = String(newProduct.description || "").trim();
             await ProductsApi.create({
                 name,
                 price: priceNumber,
                 categoryId: Number(newProduct.categoryId),
-                imageFileId: newProduct.imageFileId == null ? null : Number(newProduct.imageFileId)
+                imageFileId: newProduct.imageFileId == null ? null : Number(newProduct.imageFileId),
+                description: desc,
+                productDescription: desc
             });
             cancelProduct();
             await loadProducts();
@@ -237,7 +241,8 @@ export default function ProductsPage() {
             name: row.name,
             price: row.price,
             categoryId: row.categoryId,
-            imageFileId: row.imageFileId ?? null
+            imageFileId: row.imageFileId ?? null,
+            description: row.description ?? ""
         });
         setFormError({ message: "", details: [] });
     }
@@ -252,12 +257,15 @@ export default function ProductsPage() {
         if (!editModel) return;
         try {
             setSaving(true);
+            const normalizeDescription = String(editModel.description || "").trim();
             const body = {
                 productId: Number(editModel.id),
                 name: String(editModel.name || "").trim(),
                 price: Number(editModel.price),
                 categoryId: Number(editModel.categoryId),
-                imageFileId: editModel.imageFileId == null ? null : Number(editModel.imageFileId)
+                imageFileId: editModel.imageFileId == null ? null : Number(editModel.imageFileId),
+                description: normalizeDescription,
+                productDescription: normalizeDescription
             };
             await ProductsApi.update(editModel.id, body);
 
@@ -270,7 +278,8 @@ export default function ProductsPage() {
                     price: body.price,
                     categoryId: body.categoryId,
                     imageFileId: body.imageFileId,
-                    imageUrl: image?.url || (body.imageFileId ? p.imageUrl : "")
+                    imageUrl: image?.url || (body.imageFileId ? p.imageUrl : ""),
+                    description: normalizeDescription
                 };
             }));
 
@@ -375,6 +384,16 @@ export default function ProductsPage() {
                             style={fieldStyle}
                         />
 
+                        { }
+                        <label>Beskrivelse</label>
+                        <textarea
+                            value={newProduct.description}
+                            onChange={(e) => setNewProduct(p => ({ ...p, description: e.target.value }))}
+                            rows={3}
+                            style={{ ...fieldStyle, resize: "vertical" }}
+                            placeholder="Beskriv produktet…"
+                        />
+
                         <label>Kategori</label>
                         <select
                             value={newProduct.categoryId === "" ? "" : String(newProduct.categoryId)}
@@ -458,6 +477,14 @@ export default function ProductsPage() {
                                             value={editModel.name}
                                             onChange={(e) => setEditModel(m => ({ ...m, name: e.target.value }))}
                                             style={fieldStyle}
+                                        />
+                                        { }
+                                        <textarea
+                                            value={editModel.description ?? ""}
+                                            onChange={(e) => setEditModel(m => ({ ...m, description: e.target.value }))}
+                                            rows={3}
+                                            style={{ ...fieldStyle, marginTop: 6, resize: "vertical" }}
+                                            placeholder="Beskriv produktet…"
                                         />
                                     </td>
                                     <td style={cellTextCenter}>

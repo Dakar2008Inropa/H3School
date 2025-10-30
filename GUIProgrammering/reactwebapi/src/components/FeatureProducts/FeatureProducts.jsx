@@ -1,5 +1,6 @@
 ﻿import { useEffect, useState } from 'react';
 import { ProductsApi } from '../../api/productsApi';
+import { Link } from 'react-router-dom';
 import './FeatureProducts.css';
 
 const FEATURED_CACHE_KEY = 'featuredProducts:v1';
@@ -21,7 +22,6 @@ function saveFeaturedCache(ids) {
     try {
         localStorage.setItem(FEATURED_CACHE_KEY, JSON.stringify({ ids, ts: Date.now() }));
     } catch {
-        // Ignorere fejl ved lagring
     }
 }
 
@@ -141,7 +141,14 @@ export const FeatureProducts = () => {
             <h1 className="section-title">Featured products</h1>
             <div className="feature-products-grid">
                 {items.map(p => (
-                    <ProductCard key={p.id} product={p} />
+                    <Link
+                        key={p.id}
+                        to={`/products/${p.id}`}
+                        aria-label={`Open ${p.title}`}
+                        style={{ textDecoration: 'none', color: 'inherit' }}
+                    >
+                        <ProductCard product={p} />
+                    </Link>
                 ))}
             </div>
         </section>

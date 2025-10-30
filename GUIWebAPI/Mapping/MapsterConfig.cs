@@ -17,6 +17,7 @@ namespace GUIWebAPI.Mapping
             config.NewConfig<ProductCreateDto, Product>()
                 .Map(d => d.Name, s => s.Name)
                 .Map(d => d.Price, s => s.Price)
+                .Map(d => d.Description, s => s.Description)
                 .Map(d => d.CategoryId, s => s.CategoryId)
                 .Map(d => d.ImageFileId, s => s.ImageFileId);
 

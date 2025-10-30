@@ -11,10 +11,12 @@ namespace GUIWebAPI.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly DBContext db;
+        private readonly ILogger<ProductsController> logger;
 
-        public ProductsController(DBContext db)
+        public ProductsController(DBContext db, ILogger<ProductsController> logger)
         {
             this.db = db;
+            this.logger = logger;
         }
 
         [HttpGet]
@@ -30,7 +32,7 @@ namespace GUIWebAPI.Controllers
                 return BadRequest(new { message = "Page size must be greater than 1." });
             }
 
-            if(pageSize > 20)
+            if (pageSize > 20)
             {
                 pageSize = 20;
             }
@@ -79,17 +81,35 @@ namespace GUIWebAPI.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ProductReadDto>> GetById(int id)
         {
-            Product product = await db.Products
-                .AsNoTracking()
-                .Include(p => p.Category)
-                .FirstOrDefaultAsync(p => p.ProductId == id);
+            try
+            {
+                ProductReadDto dto = await db.Products
+                    .AsNoTracking()
+                    .Where(p => p.ProductId == id)
+                    .Select(p => new ProductReadDto
+                    {
+                        ProductId = p.ProductId,
+                        Name = p.Name,
+                        Price = p.Price,
+                        Description = p.Description,
+                        CategoryId = p.CategoryId,
+                        CategoryName = p.Category != null ? p.Category.Name : string.Empty,
+                        ImageFileId = p.ImageFileId,
+                        ImageUrl = p.ImageFile != null ? p.ImageFile.RelativePath : string.Empty
+                    })
+                    .FirstOrDefaultAsync();
 
-            if (product == null) return NotFound();
+                if (dto == null) return NotFound();
 
-            ProductReadDto dto = product.Adapt<ProductReadDto>();
-            dto.ImageUrl = MakeAbsoluteUrl(dto.ImageUrl);
+                dto.ImageUrl = MakeAbsoluteUrl(dto.ImageUrl);
 
-            return Ok(dto);
+                return Ok(dto);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to GET product by id {ProductId}. Path: {Path}, Query: {Query}", id, HttpContext?.Request?.Path.Value, HttpContext?.Request?.QueryString.Value);
+                return Problem(title: "An unexpected error occurred while retrieving the product.", statusCode: StatusCodes.Status500InternalServerError);
+            }
         }
 
         [HttpGet("search")]
@@ -177,6 +197,7 @@ namespace GUIWebAPI.Controllers
 
             current.Name = input.Name?.Trim() ?? string.Empty;
             current.Price = input.Price;
+            current.Description = input.Description?.Trim() ?? string.Empty;
             current.CategoryId = input.CategoryId;
             current.ImageFileId = input.ImageFileId;
 
