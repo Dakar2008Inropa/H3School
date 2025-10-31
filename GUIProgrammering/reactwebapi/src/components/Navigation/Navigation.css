@@ -70,7 +70,7 @@
 
 @media (max-width: 860px) {
     .nav {
-        top: calc(var(--header-height) + 33px);
+        top: calc(var(--header-height) + 32px);
     }
 
     .nav_toggle {
@@ -84,7 +84,7 @@
     .nav_list {
         display: none;
         position: fixed;
-        top: calc(var(--header-height) + var(--nav-height) + 33px);
+        top: calc(var(--header-height) + var(--nav-height) + 32px);
         left: 0;
         right 0;
         z-index: 499;

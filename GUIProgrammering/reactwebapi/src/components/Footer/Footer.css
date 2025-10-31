@@ -110,6 +110,19 @@
 
     .newsletter-title {
         font-size: 36px;
+        text-align: center;
+    }
+
+    .newsletter-subtitle {
+        text-align: center;
+    }
+
+    .newsletter-copy {
+        text-align: center;
+    }
+
+    .newsletter-fineprint {
+        text-align: center;
     }
 
     .footer {
@@ -117,9 +130,17 @@
         padding-right: 16px;
     }
 
-    .footer-links li + li {
-        margin-top: 16px;
+    .footer-col-title {
+        text-align: center;
     }
+
+    .footer-links li {
+        text-align: center;
+    }
+
+        .footer-links li + li {
+            margin-top: 16px;
+        }
 
     .footer-links a {
         display: inline-block;
@@ -128,10 +149,12 @@
 
     .newsletter-input {
         margin-top: 8px;
+        text-align: center;
     }
 
         .newsletter-input input {
             max-width: 100%;
+            text-align: center;
         }
 }
 

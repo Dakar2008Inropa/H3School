@@ -66,6 +66,14 @@
 }
 
 @media (max-width: 860px) {
+    .offer {
+        margin-top: 36px;
+    }
+
+    .offer__title, .offer__subtitle {
+        margin: 0 auto;
+    }
+
     .offer__inner {
         grid-template-columns: 1fr;
         gap: 8px;
