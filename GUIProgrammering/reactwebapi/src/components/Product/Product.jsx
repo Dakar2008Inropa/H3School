@@ -1,9 +1,9 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ProductsApi } from "../../api/productsApi";
 import { useAppNavigation } from "../../routes/useAppNavigation";
-import "./Product.css";
 import { useCart } from "../../cart/CartContext";
+import "./Product.css";
 
 function toInt(v) {
     if (v === null || v === undefined) return null;

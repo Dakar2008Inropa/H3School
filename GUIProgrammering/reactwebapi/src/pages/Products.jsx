@@ -15,22 +15,12 @@ function toInt(v) {
 }
 
 function mapProduct(p) {
-    const id = p?.id ?? p?.productId ?? 0;
-    const title = p?.name ?? p?.title ?? "Untitled";
+    const id = p?.productId ?? 0;
+    const title = p?.name ?? "Untitled";
     const price = p?.price ?? 0;
     const image = typeof p?.imageUrl === "string" ? p.imageUrl : "";
-
-    const categoryId =
-        p?.categoryId ??
-        p?.categoryID ??
-        p?.CategoryId ??
-        p?.category?.id ??
-        p?.category?.categoryId ??
-        p?.category?.categoryID ??
-        null;
-
-    const categoryName =
-        p?.categoryName ?? p?.category?.name ?? p?.category?.title ?? null;
+    const categoryId = p?.categoryId ?? null;
+    const categoryName = p?.categoryName ?? null;
 
     return { id, title, price, image, categoryId, categoryName };
 }

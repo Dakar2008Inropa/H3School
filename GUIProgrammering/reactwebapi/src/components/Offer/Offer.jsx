@@ -11,14 +11,10 @@ export const Offer = ({
         <aside className="offer" role="complementary" aria-label="Current offer">
             <div className="offer__inner">
                 <div className="offer__copy">
-                    { }
                     <h2 className="offer__title">{mainTitle}</h2>
-                    { }
                     <p className="offer__subtitle">{saveTitle}</p>
                 </div>
-
                 <div className="offer__imageWrap">
-                    { }
                     <img className="offer__image" src={imageSrc} alt={imageAlt} loading="lazy" />
                 </div>
             </div>

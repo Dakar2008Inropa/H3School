@@ -22,6 +22,7 @@ function saveFeaturedCache(ids) {
     try {
         localStorage.setItem(FEATURED_CACHE_KEY, JSON.stringify({ ids, ts: Date.now() }));
     } catch {
+        // Ignore
     }
 }
 

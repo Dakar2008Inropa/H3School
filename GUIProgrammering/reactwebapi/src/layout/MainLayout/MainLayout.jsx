@@ -5,17 +5,15 @@ import { Footer } from "../../components/Footer/Footer";
 
 export const MainLayout = () => {
     return (
-        <>
-            <div className="page">
-                <main>
-                    <Header titlePart1="Aura" titlePart2="Edit" />
-                    <Navigation />
-                    <div className="content-wrapper">
-                        <Outlet />
-                    </div>
-                </main>
-                <Footer />
-            </div>
-        </>
+        <div className="page">
+            <main>
+                <Header titlePart1="Aura" titlePart2="Edit" />
+                <Navigation />
+                <div className="content-wrapper">
+                    <Outlet />
+                </div>
+            </main>
+            <Footer />
+        </div>
     );
 };
