@@ -11,7 +11,7 @@ export const Header = ({ titlePart1 = "Test", titlePart2 = "Test2", cartCount = 
     const cartLabel = Number.isFinite(count) && count > 0 ? `${count} item${count === 1 ? "" : "s"}` : "Empty Cart";
 
     return (
-        <header className="header-title">
+        <header role="banner" aria-label="Site header" className="header-title">
             <a href="/" className="home-link">
                 <span className="left-text">{titlePart1}</span>
                 <span className="slash">//</span>

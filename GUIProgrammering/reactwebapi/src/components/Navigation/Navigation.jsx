@@ -52,7 +52,7 @@ export const Navigation = () => {
     }, []);
 
     return (
-        <nav className="nav" role="navigation" aria-label="Main">
+        <nav className="nav MainNav" role="MainNavigation" aria-label="Nav">
             <button
                 className="nav_toggle"
                 type="button"
