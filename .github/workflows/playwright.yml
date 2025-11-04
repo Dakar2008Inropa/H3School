@@ -1,0 +1,58 @@
+# [NEW] Denne workflow skal ligge i repoets rod under .github/workflows for at GitHub Actions kan finde den.
+name: Playwright Tests
+
+on:
+  push:
+    branches: [ main, master ]
+    # [NEW] Kør kun når der ændres i din React-app eller workflow-filen (mindre spild i monorepo)
+    paths:
+      - 'GUIProgrammering/reactwebapi/**'
+      - '.github/workflows/playwright.yml'
+  pull_request:
+    branches: [ main, master ]
+    # [NEW] Samme filter for PRs
+    paths:
+      - 'GUIProgrammering/reactwebapi/**'
+      - '.github/workflows/playwright.yml'
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+
+    # [NEW] Sæt standard working-directory til din app-mappe, så npm-kommandoer kører det rigtige sted
+    defaults:
+      run:
+        working-directory: GUIProgrammering/reactwebapi
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          # [NEW] Slå npm-cache til for hurtigere builds
+          cache: 'npm'
+          # [NEW] Peg på lock-filen i din app-mappe
+          cache-dependency-path: GUIProgrammering/reactwebapi/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        # [NEW] Hvis du ikke har package-lock.json, så byt til "npm install"
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        run: npx playwright test
+        # [NEW] Hvis din app skal buildes/starte først, så sørg for at det er konfigureret i playwright.config.* via webServer,
+        #        ellers kan du tilføje trin til "npm run build" og starte serveren her.
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          # [EDITED] Artifact-sti skal være relativ til repo-roden, så vi peger eksplicit på mappen i appen
+          path: GUIProgrammering/reactwebapi/playwright-report/
+          retention-days: 30
