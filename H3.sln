@@ -50,6 +50,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CouchDBTest", "DatabaseProg
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "reactwebapi", "GUIProgrammering\ReactWebAPI\reactwebapi.esproj", "{3F30F8CB-7C42-C7EA-6446-CAD8CFC38198}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebAPIUnitTest", "WebAPIUnitTest\WebAPIUnitTest.csproj", "{B65176B0-AC9B-4517-8561-32A8686BA490}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -116,6 +118,10 @@ Global
 		{3F30F8CB-7C42-C7EA-6446-CAD8CFC38198}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3F30F8CB-7C42-C7EA-6446-CAD8CFC38198}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3F30F8CB-7C42-C7EA-6446-CAD8CFC38198}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{B65176B0-AC9B-4517-8561-32A8686BA490}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B65176B0-AC9B-4517-8561-32A8686BA490}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B65176B0-AC9B-4517-8561-32A8686BA490}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B65176B0-AC9B-4517-8561-32A8686BA490}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -139,6 +145,7 @@ Global
 		{74908196-F816-E996-BF35-43B6789666FF} = {3C4B02AA-03F7-48AC-A24C-6DE90B663F2A}
 		{1184E0D9-165F-4775-AFEF-9675DD0F59B9} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{3F30F8CB-7C42-C7EA-6446-CAD8CFC38198} = {3C4B02AA-03F7-48AC-A24C-6DE90B663F2A}
+		{B65176B0-AC9B-4517-8561-32A8686BA490} = {4BE235D9-211B-46C3-9D4F-56B0848ECEC5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {72683C36-8E0C-49E2-AA69-0D580BCF4475}
