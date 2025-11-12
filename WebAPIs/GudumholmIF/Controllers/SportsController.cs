@@ -44,7 +44,8 @@ namespace GudumholmIF.Controllers
             SportFeeHistory history = new SportFeeHistory
             {
                 Sport = entity,
-                AnnualFee = entity.AnnualFee,
+                AnnualFeeAdult = entity.AnnualFeeAdult,
+                AnnualFeeChild = entity.AnnualFeeChild,
                 EffectiveFrom = DateOnly.FromDateTime(DateTime.Today),
                 Reason = "Initial fee"
             };
@@ -62,15 +63,17 @@ namespace GudumholmIF.Controllers
             Sport entity = await db.Sports.FirstOrDefaultAsync(s => s.Id == id, ct);
             if (entity == null) return NotFound();
 
-            bool feeChanged = dto.AnnualFee != entity.AnnualFee;
+            bool adultChanged = dto.AnnualFeeAdult != entity.AnnualFeeAdult;
+            bool childChanged = dto.AnnualFeeChild != entity.AnnualFeeChild;
             dto.Adapt(entity);
 
-            if (feeChanged)
+            if (adultChanged || childChanged)
             {
                 SportFeeHistory history = new SportFeeHistory
                 {
                     SportId = entity.Id,
-                    AnnualFee = entity.AnnualFee,
+                    AnnualFeeAdult = entity.AnnualFeeAdult,
+                    AnnualFeeChild = entity.AnnualFeeChild,
                     EffectiveFrom = DateOnly.FromDateTime(DateTime.Today),
                     Reason = "Updated via API"
                 };
@@ -87,7 +90,8 @@ namespace GudumholmIF.Controllers
             Sport entity = await db.Sports.FirstOrDefaultAsync(s => s.Id == id, ct);
             if (entity == null) return NotFound();
 
-            entity.AnnualFee = dto.AnnualFee;
+            entity.AnnualFeeAdult = dto.AnnualFeeAdult;
+            entity.AnnualFeeChild = dto.AnnualFeeChild;
             SportFeeHistory history = dto.Adapt<SportFeeHistory>();
             history.SportId = id;
             db.SportFeeHistories.Add(history);

@@ -1,9 +1,10 @@
 ﻿using GudumholmIF.Models.Application;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace GudumholmIF.Models
 {
-    public sealed class ClubContext : DbContext
+    public sealed class ClubContext : IdentityDbContext<ApplicationUser>
     {
         public ClubContext(DbContextOptions<ClubContext> options) : base(options)
         {
@@ -17,9 +18,14 @@ namespace GudumholmIF.Models
         public DbSet<Sport> Sports => Set<Sport>();
         public DbSet<SportFeeHistory> SportFeeHistories => Set<SportFeeHistory>();
         public DbSet<PersonSport> PersonSports => Set<PersonSport>();
+        public DbSet<MembershipHistory> MembershipHistories => Set<MembershipHistory>();
+
+        public DbSet<ApplicationSetting> AppSettings => Set<ApplicationSetting>();
 
         protected override void OnModelCreating(ModelBuilder b)
         {
+            base.OnModelCreating(b);
+
             b.Entity<Household>(e =>
             {
                 e.Property(p => p.Street).HasMaxLength(200).IsRequired();
@@ -90,21 +96,46 @@ namespace GudumholmIF.Models
             {
                 e.HasIndex(s => s.Name).IsUnique();
                 e.Property(s => s.Name).HasMaxLength(120).IsRequired();
-                e.Property(s => s.AnnualFee).HasColumnType("decimal(10,2)");
+                e.Property(s => s.AnnualFeeAdult).HasColumnType("decimal(10,2)");
+                e.Property(s => s.AnnualFeeChild).HasColumnType("decimal(10,2)");
             });
 
             b.Entity<SportFeeHistory>(e =>
             {
                 e.HasOne(h => h.Sport).WithMany(s => s.FeeHistory).HasForeignKey(h => h.SportId);
-                e.Property(h => h.AnnualFee).HasColumnType("decimal(10,2)");
+                e.Property(h => h.AnnualFeeAdult).HasColumnType("decimal(10,2)");
+                e.Property(h => h.AnnualFeeChild).HasColumnType("decimal(10,2)");
                 e.HasIndex(h => new { h.SportId, h.EffectiveFrom }).IsUnique();
             });
 
             b.Entity<PersonSport>(e =>
             {
-                e.HasKey(ps => new { ps.PersonId, ps.SportId, ps.Joined });
+                e.HasKey(ps => ps.Id);
+
                 e.HasOne(ps => ps.Person).WithMany(p => p.Sports).HasForeignKey(ps => ps.PersonId);
-                e.HasOne(ps => ps.Sport).WithMany(s => s.Members).HasForeignKey(ps => ps.SportId);
+                e.HasOne(ps => ps.Sport).WithMany(p => p.Members).HasForeignKey(ps => ps.SportId);
+
+                e.HasIndex(ps => new { ps.PersonId, ps.SportId }).IsUnique().HasFilter("[Left] IS NULL");
+            });
+
+            b.Entity<MembershipHistory>(e =>
+            {
+                e.Property(h => h.State).IsRequired();
+                e.Property(h => h.ChangedOn).IsRequired();
+
+                e.HasOne(h => h.Person)
+                .WithMany()
+                .HasForeignKey(h => h.PersonId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+                e.HasIndex(h => new { h.PersonId, h.ChangedOn });
+            });
+
+            b.Entity<ApplicationSetting>().HasData(new ApplicationSetting
+            {
+                Id = 1,
+                PassiveAdultAnnualFee = 400m,
+                PassiveChildAnnualFee = 200m
             });
         }
     }

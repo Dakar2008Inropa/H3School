@@ -11,22 +11,24 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"
             integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
             crossorigin="anonymous"></script>
+    <script src="/ui/js/auth.js"></script>
 </head>
 
 <body class="d-flex flex-column min-vh-100 bg-dark-subtle text-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-secondary">
         <div class="container">
-            <a class="navbar-brand fw-semibold" href="/ui">Gudumholm IF — Admin UI</a>
+            <a class="navbar-brand fw-semibold" href="/ui/index.html">Gudumholm IF — Admin UI</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNav"
                     aria-controls="topNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div id="topNav" class="navbar-collapse collapse">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/ui/index.html">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="/ui/persons.html">Persons</a></li>
+                    <li class="nav-item"><a class="nav-link" aria-current="page" href="/ui/index.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/ui/persons.html">Persons</a></li>
                     <li class="nav-item"><a class="nav-link" href="/ui/households.html">Households</a></li>
                     <li class="nav-item"><a class="nav-link" href="/ui/sports.html">Sports</a></li>
+                    <li class="nav-item"><a id="navAdmin" class="nav-link d-none" href="/ui/admin.html">Admin</a></li>
                     <li class="nav-item dropdown">
                         <button class="nav-link dropdown-toggle btn btn-link text-decoration-none px-0"
                                 id="apiDropdown" data-bs-toggle="dropdown" aria-expanded="false" type="button">
@@ -37,6 +39,8 @@
                             <li><a class="dropdown-item" href="/openapi/v1.json" target="_blank">OpenAPI JSON</a></li>
                         </ul>
                     </li>
+                    <li class="nav-item"><span id="navUserName" class="nav-link disabled d-none"></span></li>
+                    <li class="nav-item"><button id="btnSignOut" class="btn btn-outline-light ms-2">Sign out</button></li>
                 </ul>
             </div>
         </div>
@@ -46,24 +50,26 @@
         <section id="persons" class="mb-4">
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <h2 class="h4 mb-0">Persons</h2>
-                <button id="reloadPersons" class="btn btn-outline-light">Reload</button>
+                <div class="d-flex ms-auto gap-2">
+                    <button id="createPerson" class="btn btn-outline-primary">New Person</button>
+                    <button id="reloadPersons" class="btn btn-outline-light">Reload</button>
+                </div>
             </div>
 
             <div class="card bg-dark border-secondary text-light mb-4">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table id="personsTable" class="table-dark table-striped table-hover table align-middle">
+                        <table id="personsTable" class="table-dark table-striped table-hover customTable table align-middle">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>Id</th>
                                     <th>CPR</th>
                                     <th>First name</th>
                                     <th>Last name</th>
-                                    <th>Date of birth</th>
-                                    <th>Household Id</th>
-                                    <th>Membership state</th>
-                                    <th>Active children</th>
-                                    <th>Actions</th>
+                                    <th class="text-center">Age</th>
+                                    <th class="text-center">Household Id</th>
+                                    <th class="text-center">Membership state</th>
+                                    <th class="text-center">Active children</th>
+                                    <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -101,17 +107,9 @@
                             <input type="date" id="dob" class="form-control bg-dark text-light border-secondary" required />
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-12">
                             <label for="householdSelect" class="form-label">Household</label>
                             <select id="householdSelect" class="form-select bg-dark text-light border-secondary" required></select>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="membershipState" class="form-label">Membership state</label>
-                            <select id="membershipState" class="form-select bg-dark text-light border-secondary" required>
-                                <option value="Active">Active</option>
-                                <option value="Passive">Passive</option>
-                            </select>
                         </div>
                     </div>
 
@@ -122,12 +120,13 @@
                 </div>
             </form>
 
-            <div class="card bg-dark border-secondary text-light mt-4">
+            <div id="parentRoleCard" class="card bg-dark border-secondary text-light mt-4">
                 <div class="card-body">
                     <h4 class="h6">Parent role</h4>
                     <div class="d-flex align-items-center gap-3">
                         <div>Parent status: <span id="parentStatus" class="fw-semibold">—</span></div>
                         <button id="makeParentBtn" class="btn btn-outline-primary btn-sm" disabled>Set as parent</button>
+                        <button id="removeParentBtn" class="btn btn-outline-danger btn-sm" disabled>Remove parent</button>
                     </div>
                 </div>
             </div>
@@ -148,10 +147,13 @@
                         <div class="col-md-3">
                             <button id="assignBoardRoleBtn" class="btn btn-primary w-100">Assign board role</button>
                         </div>
+                        <div class="col-12">
+                            <div id="boardRoleInfo" class="text-secondary small mt-1"></div>
+                        </div>
                     </div>
 
                     <div class="table-responsive">
-                        <table id="boardRolesTable" class="table-dark table-striped table-hover table align-middle">
+                        <table id="boardRolesTable" class="table-dark table-striped table-hover customTable table align-middle">
                             <thead class="table-dark">
                                 <tr>
                                     <th>Id</th>
@@ -179,16 +181,37 @@
                         <div class="col-md-3">
                             <button id="joinSportBtn" class="btn btn-primary w-100">Join sport</button>
                         </div>
+                        <div class="col-12">
+                            <div id="joinSportInfo" class="text-secondary small mt-1"></div>
+                        </div>
                     </div>
 
                     <div class="table-responsive">
-                        <table id="personSportsTable" class="table-dark table-striped table-hover table align-middle">
+                        <table id="personSportsTable" class="table-dark table-striped table-hover customTable table align-middle">
                             <thead class="table-dark">
                                 <tr>
                                     <th>Sport</th>
                                     <th>Joined</th>
                                     <th>Left</th>
                                     <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-dark border-secondary text-light mt-3">
+                <div class="card-body">
+                    <h4 class="h6">Membership history</h4>
+                    <div class="table-responsive">
+                        <table id="membershipHistoryTable" class="table-dark table-striped table-hover table align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Date</th>
+                                    <th class="text-center">State</th>
+                                    <th class="text-center">Reason</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -207,5 +230,8 @@
 
     <script src="/ui/js/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="/ui/js/app.js"></script>
+    <script>
+        Auth.ensureAuth().then(() => { if (window.PageAuthReady) window.PageAuthReady(); });
+    </script>
 </body>
 </html>

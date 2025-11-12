@@ -41,5 +41,12 @@ namespace GudumholmIF.Controllers
             decimal sum = await _calculator.AllSportsAnnualAsync(ct);
             return Ok(sum);
         }
+
+        [HttpGet("annual-income")]
+        public async Task<ActionResult<decimal>> AnnualIncome(CancellationToken ct)
+        {
+            decimal sum = await _calculator.AllPersonsAnnualAsync(ct);
+            return Ok(sum);
+        }
     }
 }

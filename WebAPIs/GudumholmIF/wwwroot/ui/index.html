@@ -11,6 +11,7 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"
             integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
             crossorigin="anonymous"></script>
+    <script src="/ui/js/auth.js"></script>
 </head>
 
 <body class="d-flex flex-column min-vh-100 bg-dark-subtle text-light">
@@ -27,6 +28,7 @@
                     <li class="nav-item"><a class="nav-link" href="/ui/persons.html">Persons</a></li>
                     <li class="nav-item"><a class="nav-link" href="/ui/households.html">Households</a></li>
                     <li class="nav-item"><a class="nav-link" href="/ui/sports.html">Sports</a></li>
+                    <li class="nav-item"><a id="navAdmin" class="nav-link d-none" href="/ui/admin.html">Admin</a></li>
                     <li class="nav-item dropdown">
                         <button class="nav-link dropdown-toggle btn btn-link text-decoration-none px-0"
                                 id="apiDropdown" data-bs-toggle="dropdown" aria-expanded="false" type="button">
@@ -37,6 +39,8 @@
                             <li><a class="dropdown-item" href="/openapi/v1.json" target="_blank">OpenAPI JSON</a></li>
                         </ul>
                     </li>
+                    <li class="nav-item"><span id="navUserName" class="nav-link disabled d-none"></span></li>
+                    <li class="nav-item"><button id="btnSignOut" class="btn btn-outline-light ms-2">Sign out</button></li>
                 </ul>
             </div>
         </div>
@@ -101,12 +105,12 @@
                 </div>
             </div>
 
-            <div class="col-12 col-xl-6">
+            <div class="col-md-6 col-xl-9">
                 <div class="card bg-dark border-secondary text-light h-100">
                     <div class="card-body">
                         <div class="fw-semibold text-uppercase small">Annual income (fees)</div>
                         <div id="annualIncome" class="display-5 stat-number mt-1">—</div>
-                        <div class="text-secondary small">Sum of active members’ sports fees (per year)</div>
+                        <div class="text-secondary small">Sum of all members’ annual fees (active sports + passive membership)</div>
                     </div>
                 </div>
             </div>
@@ -121,5 +125,8 @@
 
     <script src="/ui/js/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="/ui/js/dashboard.js"></script>
+    <script>
+        Auth.ensureAuth();
+    </script>
 </body>
 </html>

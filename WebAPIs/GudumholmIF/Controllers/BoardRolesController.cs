@@ -1,4 +1,5 @@
-﻿using GudumholmIF.Models;
+﻿using GudumholmIF.Interfaces;
+using GudumholmIF.Models;
 using GudumholmIF.Models.Application;
 using GudumholmIF.Models.DTOs.BoardAndPersonSport;
 using Mapster;
@@ -12,10 +13,12 @@ namespace GudumholmIF.Controllers
     public class BoardRolesController : ControllerBase
     {
         private readonly ClubContext db;
+        private readonly IMembershipService membership;
 
-        public BoardRolesController(ClubContext db)
+        public BoardRolesController(ClubContext db, IMembershipService membership)
         {
             this.db = db;
+            this.membership = membership;
         }
 
         [HttpGet]
@@ -54,6 +57,8 @@ namespace GudumholmIF.Controllers
             db.BoardRoles.Add(role);
             await db.SaveChangesAsync(ct);
 
+            await membership.RecalculateAsync(dto.PersonId, "Assigned board role", ct);
+
             return CreatedAtAction(nameof(Get), new { id = role.Id }, role.Adapt<BoardRoleDto>());
         }
 
@@ -67,6 +72,9 @@ namespace GudumholmIF.Controllers
 
             role.To = dto.To;
             await db.SaveChangesAsync(ct);
+
+            await membership.RecalculateAsync(role.PersonId, "Closed board role", ct);
+
             return NoContent();
         }
 
@@ -76,8 +84,14 @@ namespace GudumholmIF.Controllers
             BoardRole role = await db.BoardRoles.FirstOrDefaultAsync(r => r.Id == id, ct);
             if (role == null) return NotFound();
 
+            int personId = role.PersonId;
+
             db.BoardRoles.Remove(role);
+
             await db.SaveChangesAsync(ct);
+
+            await membership.RecalculateAsync(personId, "Deleted board role", ct);
+
             return NoContent();
         }
     }

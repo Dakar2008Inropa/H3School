@@ -12,5 +12,7 @@
         public int ActiveChildrenCount { get; set; }
 
         public bool HasParentRole { get; set; }
+
+        public int ChildrenUnder18Count { get; set; }
     }
 }

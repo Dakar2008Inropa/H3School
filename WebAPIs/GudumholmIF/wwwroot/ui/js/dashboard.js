@@ -68,7 +68,7 @@
                 $activeSports.text(active);
             });
 
-        const feesReq = api("/api/Fees/all-sports")
+        const feesReq = api("/api/Fees/annual-income")
             .then(sum => {
                 const value = Number(sum);
                 const formatted = Number.isFinite(value) ? value.toFixed(2) : String(sum);

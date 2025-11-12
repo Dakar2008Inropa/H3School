@@ -9,5 +9,7 @@
         Task<decimal> SportAnnualAsync(int sportId, CancellationToken ct);
 
         Task<decimal> AllSportsAnnualAsync(CancellationToken ct);
+
+        Task<decimal> AllPersonsAnnualAsync(CancellationToken ct);
     }
 }

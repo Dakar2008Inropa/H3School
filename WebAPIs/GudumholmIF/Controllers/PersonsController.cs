@@ -1,4 +1,5 @@
-﻿using GudumholmIF.Models;
+﻿using GudumholmIF.Interfaces;
+using GudumholmIF.Models;
 using GudumholmIF.Models.Application;
 using GudumholmIF.Models.DTOs.Person;
 using Mapster;
@@ -12,16 +13,23 @@ namespace GudumholmIF.Controllers
     public class PersonsController : ControllerBase
     {
         private readonly ClubContext db;
+        private readonly IMembershipService membership;
 
-        public PersonsController(ClubContext db)
+        public PersonsController(ClubContext db, IMembershipService membership)
         {
             this.db = db;
+            this.membership = membership;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PersonDto>>> GetAll(CancellationToken ct)
         {
-            List<Person> entities = await db.Persons.Include(p => p.State).Include(p => p.ParentRole).ToListAsync(ct);
+            List<Person> entities = await db.Persons
+                .Include(p => p.State)
+                .Include(p => p.ParentRole)
+                .Include(p => p.HouseHold)
+                    .ThenInclude(h => h.Members)
+                .ToListAsync(ct);
 
             List<PersonDto> dtos = entities.Adapt<List<PersonDto>>();
 
@@ -31,7 +39,12 @@ namespace GudumholmIF.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<PersonDto>> Get(int id, CancellationToken ct)
         {
-            Person entity = await db.Persons.Include(p => p.State).Include(p => p.ParentRole).FirstOrDefaultAsync(p => p.Id == id, ct);
+            Person entity = await db.Persons
+                .Include(p => p.State)
+                .Include(p => p.ParentRole)
+                .Include(p => p.HouseHold)
+                    .ThenInclude(h => h.Members)
+                .FirstOrDefaultAsync(p => p.Id == id, ct);
 
             if (entity == null) return NotFound();
 
@@ -45,14 +58,12 @@ namespace GudumholmIF.Controllers
         {
             Person entity = dto.Adapt<Person>();
 
-            MembershipActivityState state = dto.MembershipState == "Active" ? MembershipActivityState.Active : MembershipActivityState.Passive;
-
             MembershipState ms = new MembershipState
             {
                 Person = entity,
-                State = state,
-                ActiveSince = state == MembershipActivityState.Active ? DateOnly.FromDateTime(DateTime.Today) : null,
-                PassiveSince = state == MembershipActivityState.Passive ? DateOnly.FromDateTime(DateTime.Today) : null
+                State = MembershipActivityState.Passive,
+                ActiveSince = null,
+                PassiveSince = DateOnly.FromDateTime(DateTime.Today)
             };
 
             db.Persons.Add(entity);
@@ -60,7 +71,24 @@ namespace GudumholmIF.Controllers
 
             await db.SaveChangesAsync(ct);
 
-            PersonDto result = (await db.Persons.Include(p => p.State).Include(p => p.ParentRole).FirstAsync(p => p.Id == entity.Id, ct)).Adapt<PersonDto>();
+            db.Set<MembershipHistory>().Add(new MembershipHistory
+            {
+                PersonId = entity.Id,
+                State = MembershipActivityState.Passive,
+                ChangedOn = DateOnly.FromDateTime(DateTime.Today),
+                Reason = "Created"
+            });
+
+            await db.SaveChangesAsync(ct);
+
+            await membership.RecalculateAsync(entity.Id, "Auto state on create", ct);
+
+            PersonDto result = (await db.Persons
+                .Include(p => p.State)
+                .Include(p => p.ParentRole)
+                .Include(p => p.HouseHold)
+                    .ThenInclude(h => h.Members)
+                .FirstAsync(p => p.Id == entity.Id, ct)).Adapt<PersonDto>();
 
             return CreatedAtAction(nameof(Get), new { id = entity.Id }, result);
         }
@@ -73,25 +101,9 @@ namespace GudumholmIF.Controllers
 
             dto.Adapt(entity);
 
-            MembershipActivityState newState = dto.MembershipState == "Active" ? MembershipActivityState.Active : MembershipActivityState.Passive;
-
-            if (entity.State.State != newState)
-            {
-                entity.State.State = newState;
-
-                if (newState == MembershipActivityState.Active)
-                {
-                    entity.State.ActiveSince = DateOnly.FromDateTime(DateTime.Today);
-                    entity.State.PassiveSince = null;
-                }
-                else
-                {
-                    entity.State.PassiveSince = DateOnly.FromDateTime(DateTime.Today);
-                    entity.State.ActiveSince = null;
-                }
-            }
-
             await db.SaveChangesAsync(ct);
+
+            await membership.RecalculateAsync(id, "Auto state on person update", ct);
 
             return NoContent();
         }
@@ -123,23 +135,71 @@ namespace GudumholmIF.Controllers
             if (entity.ParentRole != null) return Conflict("Parent role already exists.");
 
             DateOnly today = DateOnly.FromDateTime(DateTime.Today);
+
+            if (today < entity.DateOfBirth.AddYears(18))
+                return BadRequest("Cannot create parent role. Person must be 18 or older.");
+
             int children = entity.HouseHold.Members.Count(m => today < m.DateOfBirth.AddYears(18));
             if (children < 1) return BadRequest("Cannot create parent role. No children under 18 in the household.");
 
             ParentRole pr = new ParentRole { PersonId = id, ActiveChildrenCount = children };
             db.ParentRoles.Add(pr);
 
-            if (entity.State.State != MembershipActivityState.Active)
-            {
-                entity.State.State = MembershipActivityState.Active;
-                entity.State.ActiveSince = today;
-                entity.State.PassiveSince = null;
-            }
+            await membership.RecalculateAsync(id, "Became parent", ct);
 
             await db.SaveChangesAsync(ct);
 
-            PersonDto result = (await db.Persons.Include(p => p.State).Include(p => p.ParentRole).FirstAsync(p => p.Id == id, ct)).Adapt<PersonDto>();
+            PersonDto result = (await db.Persons
+                .Include(p => p.State)
+                .Include(p => p.ParentRole)
+                .Include(p => p.HouseHold)
+                    .ThenInclude(h => h.Members)
+                .FirstAsync(p => p.Id == id, ct)).Adapt<PersonDto>();
             return Ok(result);
+        }
+
+        [HttpDelete("{id:int}/parent")]
+        public async Task<ActionResult<PersonDto>> RemoveParentRole(int id, CancellationToken ct)
+        {
+            Person entity = await db.Persons
+                .Include(p => p.ParentRole)
+                .Include(p => p.HouseHold)
+                    .ThenInclude(h => h.Members)
+                .Include(p => p.State)
+                .FirstOrDefaultAsync(p => p.Id == id, ct);
+
+            if (entity == null) return NotFound();
+            if (entity.ParentRole == null) return NotFound("Parent role deos not exist");
+
+            db.ParentRoles.Remove(entity.ParentRole);
+
+            await db.SaveChangesAsync(ct);
+
+            PersonDto result = (await db.Persons
+                .Include(p => p.State)
+                .Include(p => p.ParentRole)
+                .Include(p => p.HouseHold)
+                    .ThenInclude(h => h.Members)
+                .FirstAsync(p => p.Id == id, ct)).Adapt<PersonDto>();
+
+            await membership.RecalculateAsync(id, "Remove parent role", ct);
+
+            return Ok(result);
+        }
+
+        [HttpGet("{id:int}/membership-history")]
+        public async Task<ActionResult<IEnumerable<MembershipHistoryDto>>> GetMembershipHistory(int id, CancellationToken ct)
+        {
+            bool exists = await db.Persons.AnyAsync(p => p.Id == id, ct);
+            if (!exists) return NotFound();
+
+            List<MembershipHistoryDto> dtos = await db.MembershipHistories
+                .Where(h => h.PersonId == id)
+                .OrderByDescending(h => h.ChangedOn)
+                .ProjectToType<MembershipHistoryDto>()
+                .ToListAsync(ct);
+
+            return Ok(dtos);
         }
     }
 }

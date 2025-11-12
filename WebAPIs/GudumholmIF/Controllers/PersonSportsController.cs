@@ -1,4 +1,5 @@
-﻿using GudumholmIF.Models;
+﻿using GudumholmIF.Interfaces;
+using GudumholmIF.Models;
 using GudumholmIF.Models.Application;
 using GudumholmIF.Models.DTOs.BoardAndPersonSport;
 using Mapster;
@@ -12,10 +13,12 @@ namespace GudumholmIF.Controllers
     public sealed class PersonSportsController : ControllerBase
     {
         private readonly ClubContext db;
+        private readonly IMembershipService membership;
 
-        public PersonSportsController(ClubContext db)
+        public PersonSportsController(ClubContext db, IMembershipService membership)
         {
             this.db = db;
+            this.membership = membership;
         }
 
         [HttpGet]
@@ -27,6 +30,8 @@ namespace GudumholmIF.Controllers
             List<PersonSport> list = await db.PersonSports
                 .Where(ps => ps.PersonId == personId)
                 .AsNoTracking()
+                .OrderByDescending(m => m.Left == null)
+                .ThenByDescending(m => m.FullLeftDate ?? m.FullJoinedDate)
                 .ToListAsync(ct);
 
             return Ok(list.Adapt<List<PersonSportDto>>());
@@ -38,9 +43,10 @@ namespace GudumholmIF.Controllers
             Person person = await db.Persons.Include(p => p.State).FirstOrDefaultAsync(p => p.Id == personId, ct);
             if (person == null) return NotFound();
 
-            if (person.State.State != MembershipActivityState.Active) return BadRequest("Person must be active to join a sport.");
+            var dateTimeToday = DateTime.Now;
 
-            DateOnly joined = dto.Joined ?? DateOnly.FromDateTime(DateTime.Today);
+            DateOnly joined = dto.Joined ?? DateOnly.FromDateTime(dateTimeToday);
+            DateTime joinedFully = dateTimeToday;
 
             bool alreadyActive = await db.PersonSports.AnyAsync(ps => ps.PersonId == personId && ps.SportId == dto.SportId && ps.Left == null, ct);
             if (alreadyActive) return Conflict("Already a member of this sport.");
@@ -50,12 +56,17 @@ namespace GudumholmIF.Controllers
                 PersonId = personId,
                 SportId = dto.SportId,
                 Joined = joined,
+                FullJoinedDate = joinedFully,
+                FullLeftDate = null,
+                Active = true,
                 Left = null
             };
             db.PersonSports.Add(link);
             await db.SaveChangesAsync(ct);
 
-            return CreatedAtAction(nameof(GetAll), new { personId = personId }, link.Adapt<PersonSportDto>());
+            await membership.RecalculateAsync(personId, "Joined sport", ct);
+
+            return CreatedAtAction(nameof(GetAll), new { personId }, link.Adapt<PersonSportDto>());
         }
 
         [HttpPost("{sportId:int}/leave")]
@@ -68,8 +79,17 @@ namespace GudumholmIF.Controllers
 
             if (active == null) return NotFound();
 
-            active.Left = dto.Left;
+            DateTime now = DateTime.Now;
+            DateTime fullLeft = dto.FullLeftDate != default(DateTime) ? dto.FullLeftDate : now;
+            DateOnly leftDate = dto.Left != default(DateOnly) ? dto.Left : DateOnly.FromDateTime(fullLeft);
+
+            active.Left = leftDate;
+            active.FullLeftDate = fullLeft;
+            active.Active = false;
             await db.SaveChangesAsync(ct);
+
+            await membership.RecalculateAsync(personId, "Left sport", ct);
+
             return NoContent();
         }
     }

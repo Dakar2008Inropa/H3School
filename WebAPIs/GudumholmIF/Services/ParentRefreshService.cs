@@ -1,4 +1,5 @@
-﻿using GudumholmIF.Models;
+﻿using GudumholmIF.Interfaces;
+using GudumholmIF.Models;
 using GudumholmIF.Models.Application;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,6 +32,8 @@ namespace GudumholmIF.Services
                     .Include(pr => pr.Person.State)
                     .ToListAsync(ct);
 
+                var membership = scope.ServiceProvider.GetRequiredService<IMembershipService>();
+
                 foreach (var pr in parents)
                 {
                     var members = pr.Person.HouseHold.Members;
@@ -41,12 +44,7 @@ namespace GudumholmIF.Services
 
                     pr.ActiveChildrenCount = activeChildren;
 
-                    if (activeChildren == 0 && pr.Person.State.State != MembershipActivityState.Passive)
-                    {
-                        pr.Person.State.State = MembershipActivityState.Passive;
-                        pr.Person.State.PassiveSince = today;
-                        pr.Person.State.ActiveSince = null;
-                    }
+                    await membership.RecalculateAsync(pr.Person.Id, "Nightly parent/children refresh", ct);
                 }
 
                 await db.SaveChangesAsync(ct);

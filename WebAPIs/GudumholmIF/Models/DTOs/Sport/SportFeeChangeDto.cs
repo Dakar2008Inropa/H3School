@@ -2,7 +2,8 @@
 {
     public sealed class SportFeeChangeDto
     {
-        public decimal AnnualFee { get; set; }
+        public decimal AnnualFeeAdult { get; set; }
+        public decimal AnnualFeeChild { get; set; }
         public DateOnly EffectiveFrom { get; set; }
         public string Reason { get; set; }
     }

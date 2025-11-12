@@ -53,3 +53,26 @@ body {
 #annualIncome.stat-number {
     color: var(--bs-danger);
 }
+
+.customTable td.actions {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+    .customTable td.actions .actions-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: .5rem;
+    }
+
+        .customTable td.actions .actions-grid .btn {
+            width: 100%;
+        }
+
+    .customTable td.actions .me-1 {
+        margin-right: 0;
+    }
+
+.btn-fullwidth {
+    width: 100%;
+}

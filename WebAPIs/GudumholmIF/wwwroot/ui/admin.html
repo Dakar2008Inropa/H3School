@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Gudumholm IF — Admin</title>
+
+    <link rel="stylesheet" href="/ui/css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="/ui/css/styles.css" />
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+            integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+            crossorigin="anonymous"></script>
+    <script src="/ui/js/auth.js"></script>
+</head>
+<body class="bg-dark-subtle text-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-secondary">
+        <div class="container">
+            <a class="navbar-brand fw-semibold" href="/ui/index.html">Gudumholm IF — Admin UI</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNav"
+                    aria-controls="topNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div id="topNav" class="navbar-collapse collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" aria-current="page" href="/ui/index.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ui/persons.html">Persons</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ui/households.html">Households</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ui/sports.html">Sports</a></li>
+                    <li class="nav-item"><a id="navAdmin" class="nav-link d-none active" href="/ui/admin.html">Admin</a></li>
+                    <li class="nav-item dropdown">
+                        <button class="nav-link dropdown-toggle btn btn-link text-decoration-none px-0"
+                                id="apiDropdown" data-bs-toggle="dropdown" aria-expanded="false" type="button">
+                            API docs
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="apiDropdown">
+                            <li><a class="dropdown-item" href="/swagger" target="_blank">Open Swagger</a></li>
+                            <li><a class="dropdown-item" href="/openapi/v1.json" target="_blank">OpenAPI JSON</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item"><span id="navUserName" class="nav-link disabled d-none"></span></li>
+                    <li class="nav-item"><button id="btnSignOut" class="btn btn-outline-light ms-2">Sign out</button></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container py-4">
+        <h1 class="h4 mb-3">Administration</h1>
+
+        <div id="adminError" class="alert alert-danger d-none" role="alert"></div>
+
+        <div class="row g-3">
+            <div class="col-lg-12">
+                <div class="card bg-dark border-secondary h-100">
+                    <div class="card-body">
+                        <h2 class="h5">Users</h2>
+                        <div class="table-responsive">
+                            <table class="table-dark table-striped table align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Email</th>
+                                        <th>Roles</th>
+                                        <th>2FA</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTable"></tbody>
+                            </table>
+                        </div>
+                        <div class="small text-secondary">Tip: Initiate 2FA to force setup on next login.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="card bg-dark border-secondary h-100">
+                    <div class="card-body">
+                        <h2 class="h5">Roles</h2>
+                        <form id="formCreateRole" class="row g-2">
+                            <div class="col-8">
+                                <label for="roleName" class="form-label small">New role</label>
+                                <input id="roleName" class="form-control" />
+                            </div>
+                            <div class="col-4 d-flex align-items-end">
+                                <button class="btn btn-primary w-100">Create</button>
+                            </div>
+                        </form>
+                        <hr />
+                        <div>
+                            <h3 class="h6">Existing roles</h3>
+                            <ul id="rolesList" class="list-group list-group-flush"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card bg-dark border-secondary">
+                    <div class="card-body">
+                        <h2 class="h5">API Key</h2>
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-8">
+                                <label class="form-label small" for="apiKeyValue">Current API key</label>
+                                <input id="apiKeyValue" class="form-control bg-dark text-light border-secondary" readonly />
+                            </div>
+                            <div class="col-md-4 d-flex gap-2">
+                                <button id="btnCopyApiKey" class="btn btn-outline-light flex-fill">Copy</button>
+                                <button id="btnRotateApiKey" class="btn btn-outline-warning flex-fill">Rotate</button>
+                            </div>
+                        </div>
+                        <div class="small text-secondary mt-2">Use this key via header: <code>X-API-Key: &lt;value&gt;</code></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/ui/js/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="/ui/js/admin.js"></script>
+    <script>
+        Auth.ensureAuth(["Administrator"]);</script>
+</body>
+</html>
