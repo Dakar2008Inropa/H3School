@@ -18,6 +18,11 @@
                 const me = await res.json();
                 Auth.currentUser = me;
 
+                if (me.twoFactorEnabled === false && me.twoFactorSetupPending === true && me.twoFactorBypassUsed !== true) {
+                    window.location.href = "/ui/login.html";
+                    return;
+                }
+
                 if (Array.isArray(requiredRoles) && requiredRoles.length > 0) {
                     const hasRole = (me.roles || []).some(r => requiredRoles.includes(r));
                     if (!hasRole) {

@@ -12,6 +12,8 @@ using GudumholmIF.Infrastructure;
 using GudumholmIF.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 
 namespace GudumholmIF
 {
@@ -63,6 +65,34 @@ namespace GudumholmIF
                 o.LoginPath = "/ui/login.html";
                 o.Cookie.Name = "gudumholm.auth";
                 o.SlidingExpiration = true;
+
+                o.Events = new CookieAuthenticationEvents
+                {
+                    OnRedirectToLogin = context =>
+                    {
+                        if (context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
+                        {
+                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            context.Response.ContentType = "application/json";
+                            return context.Response.WriteAsync("{\"message\":\"API key required or sign in.\"}");
+                        }
+
+                        context.Response.Redirect(context.RedirectUri);
+                        return Task.CompletedTask;
+                    },
+                    OnRedirectToAccessDenied = context =>
+                    {
+                        if (context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
+                        {
+                            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                            context.Response.ContentType = "application/json";
+                            return context.Response.WriteAsync("{\"message\":\"Access denied.\"}");
+                        }
+
+                        context.Response.Redirect(context.RedirectUri);
+                        return Task.CompletedTask;
+                    }
+                };
             })
             .AddCookie(IdentityConstants.TwoFactorUserIdScheme)
             .AddCookie(IdentityConstants.ExternalScheme);
@@ -119,12 +149,7 @@ namespace GudumholmIF
 
             if (app.Environment.IsDevelopment())
             {
-                app.MapOpenApi();
-
                 app.UseDeveloperExceptionPage();
-
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Gudumholm IF API v1"));
             }
 
             app.UseHttpsRedirection();
@@ -132,6 +157,16 @@ namespace GudumholmIF
             app.UseDefaultFiles(new DefaultFilesOptions { RequestPath = "/ui" });
 
             app.UseStaticFiles();
+
+            var openAPI = app.MapOpenApi();
+            openAPI.AllowAnonymous();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Gudumholm IF API v1");
+                c.SwaggerEndpoint("/openapi/v1.json", "Gudumholm IF OpenAPI v1");
+            });
 
             app.UseAuthentication();
             app.UseAuthorization();

@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 
 namespace GudumholmIF.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     [ApiController]
     [Route("api/[controller]")]
     public sealed class SettingsController : ControllerBase

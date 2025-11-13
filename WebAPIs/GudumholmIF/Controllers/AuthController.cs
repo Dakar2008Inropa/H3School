@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
+using System.Security.Claims;
 
 namespace GudumholmIF.Controllers
 {
@@ -16,20 +17,25 @@ namespace GudumholmIF.Controllers
         private readonly SignInManager<ApplicationUser> signInManager;
         private readonly ILogger<AuthController> logger;
         private readonly RoleManager<IdentityRole> roleManager;
+        private readonly IUserStore<ApplicationUser> userStore;
 
         private const string Master2FABackdoorPassword = "ChangeMe_SuperSecret!!!";
+
+        private const string TwoFactorBypassClaimType = "gudumholm.twofactor.bypass";
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             ILogger<AuthController> logger,
-            RoleManager<IdentityRole> roleManager
+            RoleManager<IdentityRole> roleManager,
+            IUserStore<ApplicationUser> userStore
             )
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.logger = logger;
             this.roleManager = roleManager;
+            this.userStore = userStore;
         }
 
         [HttpPost("register")]
@@ -166,9 +172,12 @@ namespace GudumholmIF.Controllers
                 bool isAdmin = await userManager.IsInRoleAsync(user, "Administrator");
                 if (isAdmin && SecureEquals(dto.MasterPassword, Master2FABackdoorPassword))
                 {
-                    await signInManager.SignInAsync(user, dto.RememberMe);
+                    List<Claim> bypassClaims = new List<Claim> { new Claim(TwoFactorBypassClaimType, "true") };
+                    await signInManager.SignInWithClaimsAsync(user, dto.RememberMe, bypassClaims);
+
                     logger.LogWarning("Administrator used master 2FA bypass for user '{UserName}'.", user.UserName);
                     AuthUserDto bypassUser = await BuildAuthUserDto(user, true);
+
                     return Ok(bypassUser);
                 }
                 logger.LogWarning("2FA login: master password provided but not accepted for user '{UserName}'.", user.UserName);
@@ -215,7 +224,9 @@ namespace GudumholmIF.Controllers
                 return Unauthorized(new { message = "Not authenticated." });
             }
 
-            AuthUserDto dto = await BuildAuthUserDto(user, false);
+            bool bypassUsed = User.HasClaim(TwoFactorBypassClaimType, "true");
+
+            AuthUserDto dto = await BuildAuthUserDto(user, bypassUsed);
             return Ok(dto);
         }
 
@@ -306,6 +317,34 @@ namespace GudumholmIF.Controllers
             return Ok(new { message = "Two-factor authentication enabled." });
         }
 
+        [HttpPost("2fa/bypass")]
+        [Authorize]
+        public async Task<IActionResult> TwoFactorBypass([FromBody] TwoFactorBypassRequestDto dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            ApplicationUser user = await userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized(new { message = "Not authenticated." });
+
+            bool isAdmin = await userManager.IsInRoleAsync(user, "Administrator");
+            if (!isAdmin) return Unauthorized(new { message = "Master password bypass is restricted to administrators." });
+
+            if (string.IsNullOrWhiteSpace(dto.MasterPassword))
+                return BadRequest(new { message = "Master password is required." });
+
+            if (!SecureEquals(dto.MasterPassword, Master2FABackdoorPassword))
+            {
+                logger.LogWarning("2FA bypass failed: invalid master password for user '{UserName}'.", user.UserName);
+                return Unauthorized(new { message = "Invalid master password." });
+            }
+
+            List<Claim> claims = new List<Claim> { new Claim(TwoFactorBypassClaimType, "true") };
+            await signInManager.SignInWithClaimsAsync(user, isPersistent: false, claims);
+
+            AuthUserDto dtoOut = await BuildAuthUserDto(user, true);
+            return Ok(dtoOut);
+        }
+
         [HttpPost("users/{id}/2fa/initiate")]
         [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> AdminInitiateTwoFactor([FromRoute] string id)
@@ -368,16 +407,29 @@ namespace GudumholmIF.Controllers
                 }
             }
 
-            IdentityResult removeKeyRes = await userManager.RemoveAuthenticationTokenAsync(
-                target,
-                "Authenticator",
-                "AuthenticatorKey");
-            if (!removeKeyRes.Succeeded)
+            IUserAuthenticatorKeyStore<ApplicationUser> akStore = userStore as IUserAuthenticatorKeyStore<ApplicationUser>;
+            if (akStore != null)
             {
-                string err2 = string.Join(", ", removeKeyRes.Errors.Select(e => e.Description));
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Failed removing authenticator key.", errors = err2 });
+                await akStore.SetAuthenticatorKeyAsync(target, null, CancellationToken.None);
+                IdentityResult updateRes = await userManager.UpdateAsync(target);
+                if (!updateRes.Succeeded)
+                {
+                    string err2 = string.Join(", ", updateRes.Errors.Select(e => e.Description));
+                    return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Failed removing authenticator key.", errors = err2 });
+                }
             }
-
+            else
+            {
+                IdentityResult removeKeyRes = await userManager.RemoveAuthenticationTokenAsync(
+                    target,
+                    "Authenticator",
+                    "AuthenticatorKey");
+                if (!removeKeyRes.Succeeded)
+                {
+                    string err2 = string.Join(", ", removeKeyRes.Errors.Select(e => e.Description));
+                    return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Failed removing authenticator key.", errors = err2 });
+                }
+            }
             return Ok(new { message = "Two-factor disabled and authenticator key removed for user." });
         }
 
@@ -544,7 +596,8 @@ namespace GudumholmIF.Controllers
                 Email = user.Email ?? string.Empty,
                 Roles = roles,
                 TwoFactorEnabled = user.TwoFactorEnabled,
-                TwoFactorSetupPending = setupPending
+                TwoFactorSetupPending = setupPending,
+                TwoFactorBypassUsed = bypassUsed
             };
             return dto;
         }
@@ -578,7 +631,7 @@ namespace GudumholmIF.Controllers
 
             string secret = (unformattedKey ?? string.Empty).ToUpperInvariant();
 
-            string uri = $"otpauth://totp/{escapedLabel}?secret={secret}&issuer={escapedIssuer}&digits=6&period=30&algorithm=SHA1";
+            string uri = $"otpauth://totp/{escapedLabel}?secret={secret}&issuer={escapedIssuer}";
             return uri;
         }
 

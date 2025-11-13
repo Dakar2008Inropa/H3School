@@ -1,7 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using GudumholmIF.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,13 +23,24 @@ namespace GudumholmIF.Security
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, UiOrApiKeyRequirement requirement)
         {
+            HttpContext httpContext = httpContextAccessor.HttpContext;
+            if (httpContext != null)
+            {
+                PathString path = httpContext.Request.Path;
+                if (path.StartsWithSegments("/swagger", System.StringComparison.OrdinalIgnoreCase) ||
+                    path.StartsWithSegments("/openapi", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Succeed(requirement);
+                    return;
+                }
+            }
+
             if (context.User?.Identity?.IsAuthenticated == true)
             {
                 context.Succeed(requirement);
                 return;
             }
 
-            HttpContext httpContext = httpContextAccessor.HttpContext;
             if (httpContext == null)
             {
                 return;
