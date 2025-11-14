@@ -13,15 +13,23 @@ using GudumholmIF.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Diagnostics;
+using System.IO;
 
 namespace GudumholmIF
 {
-    public static class Program
+    public class Program
     {
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            string logsPath = Path.Combine(builder.Environment.ContentRootPath, "Logs");
+            Directory.CreateDirectory(logsPath);
+
+            builder.Logging.AddConsole();
+            builder.Logging.AddLog4Net("log4net.config");
 
             builder.Services.AddDbContext<ClubContext>
                 (opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("ClubDb"),
@@ -70,6 +78,9 @@ namespace GudumholmIF
                 {
                     OnRedirectToLogin = context =>
                     {
+                        ILogger<Program> logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                        logger.LogWarning("Unauthorized request to {Path}", context.Request.Path);
+
                         if (context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
                         {
                             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
@@ -82,6 +93,9 @@ namespace GudumholmIF
                     },
                     OnRedirectToAccessDenied = context =>
                     {
+                        ILogger<Program> logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                        logger.LogWarning("Access denied for {Path}", context.Request.Path);
+
                         if (context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
                         {
                             context.Response.StatusCode = StatusCodes.Status403Forbidden;
@@ -151,6 +165,26 @@ namespace GudumholmIF
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseExceptionHandler(errorApp =>
+                {
+                    errorApp.Run(async context =>
+                    {
+                        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                        context.Response.ContentType = "application/json";
+
+                        IExceptionHandlerFeature feature = context.Features.Get<IExceptionHandlerFeature>();
+                        if (feature != null)
+                        {
+                            ILogger<Program> logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+                            logger.LogError(feature.Error, "Unhandled exception");
+                        }
+
+                        await context.Response.WriteAsync("{\"message\":\"An unexpected error occurred.\"}");
+                    });
+                });
+            }
 
             app.UseHttpsRedirection();
 
@@ -176,7 +210,15 @@ namespace GudumholmIF
             using (IServiceScope scope = app.Services.CreateScope())
             {
                 IdentityDataSeeder seeder = scope.ServiceProvider.GetRequiredService<IdentityDataSeeder>();
-                await seeder.SeedAsync();
+                try
+                {
+                    await seeder.SeedAsync();
+                }
+                catch (Exception ex)
+                {
+                    app.Logger.LogCritical(ex, "Failed to seed identity data.");
+                    throw;
+                }
             }
 
             await app.RunAsync();
